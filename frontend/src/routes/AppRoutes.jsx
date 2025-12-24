@@ -80,27 +80,55 @@ const workflowSteps = [
   },
 ]
 
-const heroContent = {
-  eyebrow: 'Frontend · Atomic Design',
-  title: 'Panel operativo para empresas, productos e inventario con Tailwind + React 18.',
-  description:
-    'Esta maqueta define la capa visible que consumirá la API Django. Cada bloque corresponde a un template Atomic listo para hooks, contextos y servicios REST.',
-  buttons: [
-    { label: 'Iniciar Sesión', variant: 'primary', as: 'a', href: '/login' },
-    { label: 'Ver Empresas', variant: 'secondary', as: 'a', href: '/empresas' },
-    { label: 'Activar IA Beta', variant: 'ghost', as: 'a', href: '/ia-beta' },
-  ],
-  roadmap: {
-    eyebrow: 'Roadmap',
-    title: 'IA · Blockchain · PDF seguro',
+const getHeroContent = (isAuthenticated, user) => {
+  if (isAuthenticated && user) {
+    const displayName = user.first_name || user.username || 'Usuario'
+    return {
+      eyebrow: '✨ Bienvenido de nuevo',
+      title: `Hola ${displayName}, listo para gestionar tu inventario?`,
+      description:
+        '🎯 Tienes acceso completo a todas las funcionalidades. Gestiona empresas, productos, inventario y activa las funciones de IA para optimizar tu operación.',
+      buttons: [
+        { label: '🏢 Ver Empresas', variant: 'primary', as: 'a', href: '/empresas' },
+        { label: '📦 Inventario', variant: 'secondary', as: 'a', href: '/inventario' },
+        { label: '🤖 Activar IA Beta', variant: 'ghost', as: 'a', href: '/ia-beta' },
+      ],
+      roadmap: {
+        eyebrow: '🎯 Acciones Rápidas',
+        title: 'Continúa donde lo dejaste',
+        description:
+          'Accede a todas las funcionalidades de la plataforma. Tu sesión está activa y segura con autenticación JWT.',
+        bullets: [
+          { text: '✅ Sesión activa y segura', variant: 'primary' },
+          { text: '🚀 Todas las funciones desbloqueadas', variant: 'secondary' },
+          { text: '⚡ IA y Blockchain disponibles', variant: 'accent' },
+        ],
+      },
+    }
+  }
+
+  return {
+    eyebrow: 'Frontend · Atomic Design',
+    title: 'Panel operativo para empresas, productos e inventario con Tailwind + React 18.',
     description:
-      'El frontend consumirá endpoints JWT (/api/auth/login/) y servicios especializados para PDF/Correo. Reservamos hooks en src/hooks y contextos globales para el manejo de sesión.',
-    bullets: [
-      { text: 'Estados de carga y skeletons listos para datos reales.', variant: 'primary' },
-      { text: 'Atomic templates para Empresa, Productos, Inventario.', variant: 'secondary' },
-      { text: 'Integración de firmas blockchain y recomendaciones IA.', variant: 'accent' },
+      'Esta maqueta define la capa visible que consumirá la API Django. Cada bloque corresponde a un template Atomic listo para hooks, contextos y servicios REST.',
+    buttons: [
+      { label: 'Iniciar Sesión', variant: 'primary', as: 'a', href: '/login' },
+      { label: 'Ver Empresas', variant: 'secondary', as: 'a', href: '/empresas' },
+      { label: 'Activar IA Beta', variant: 'ghost', as: 'a', href: '/ia-beta' },
     ],
-  },
+    roadmap: {
+      eyebrow: 'Roadmap',
+      title: 'IA · Blockchain · PDF seguro',
+      description:
+        'El frontend consumirá endpoints JWT (/api/auth/login/) y servicios especializados para PDF/Correo. Reservamos hooks en src/hooks y contextos globales para el manejo de sesión.',
+      bullets: [
+        { text: 'Estados de carga y skeletons listos para datos reales.', variant: 'primary' },
+        { text: 'Atomic templates para Empresa, Productos, Inventario.', variant: 'secondary' },
+        { text: 'Integración de firmas blockchain y recomendaciones IA.', variant: 'accent' },
+      ],
+    },
+  }
 }
 
 const workflowContent = {
@@ -112,9 +140,14 @@ const workflowContent = {
 }
 
 // Componente Landing Page
-const LandingPage = () => (
-  <LandingTemplate hero={heroContent} sections={sections} workflow={workflowContent} />
-)
+const LandingPage = () => {
+  const { isAuthenticated, user } = useAuth()
+  const heroContent = getHeroContent(isAuthenticated, user)
+  
+  return (
+    <LandingTemplate hero={heroContent} sections={sections} workflow={workflowContent} />
+  )
+}
 
 // Componente de ruta protegida
 const ProtectedRoute = ({ children }) => {
