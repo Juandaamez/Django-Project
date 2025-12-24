@@ -30,7 +30,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 class ProductoViewSet(viewsets.ModelViewSet):
 	queryset = Producto.objects.select_related('empresa').all()
 	serializer_class = ProductoSerializer
-	permission_classes = [IsAdminOrReadOnly]
+	permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 	filter_backends = [filters.SearchFilter, filters.OrderingFilter]
 	search_fields = ['codigo', 'nombre', 'caracteristicas', 'empresa__nombre']
 	ordering_fields = ['nombre', 'codigo', 'empresa__nombre']
@@ -50,7 +50,7 @@ class InventarioViewSet(viewsets.ModelViewSet):
 		.all()
 	)
 	serializer_class = InventarioSerializer
-	permission_classes = [IsAdminOrReadOnly]
+	permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
 	filter_backends = [filters.SearchFilter, filters.OrderingFilter]
 	search_fields = [
 		'producto__codigo',
