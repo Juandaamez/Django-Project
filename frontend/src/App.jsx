@@ -67,7 +67,7 @@ const sections = [
       'Consulta niveles de stock, exporta reportes y programa envíos seguros vía servicios externos.',
     actions: [
       'Generación de PDF con branding',
-      'Webhook para correo y API SOAP',
+      'Webhook para correo y API REST',
       'Integración blockchain para sellado',
     ],
   },
@@ -106,10 +106,10 @@ function App() {
               </p>
               <div className="flex flex-wrap gap-3">
                 <button className="rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-slate-950 shadow-glow">
-                  Crear Empresa
+                  Iniciar Sesión
                 </button>
                 <button className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white">
-                  Ver Inventario
+                  Ver Empresas
                 </button>
                 <button className="rounded-full border border-white/10 px-6 py-3 text-sm font-semibold text-white/70">
                   Activar IA Beta
