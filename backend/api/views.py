@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 
 from django.http import HttpResponse
+from django.utils import timezone
 from rest_framework import filters, permissions, viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -291,7 +292,7 @@ class EnviarCorreoInventarioView(APIView):
 				historial.estado = 'enviado'
 				historial.proveedor = 'resend'
 				historial.respuesta_api = resultado
-				historial.fecha_envio = datetime.now()
+				historial.fecha_envio = timezone.now()
 				historial.save()
 				
 				return Response({
@@ -318,7 +319,7 @@ class EnviarCorreoInventarioView(APIView):
 					if enviados > 0:
 						historial.estado = 'enviado'
 						historial.proveedor = 'django_smtp'
-						historial.fecha_envio = datetime.now()
+						historial.fecha_envio = timezone.now()
 						historial.save()
 						
 						return Response({
