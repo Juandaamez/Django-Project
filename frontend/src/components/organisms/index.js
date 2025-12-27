@@ -1,6 +1,10 @@
 // Organisms barrel export
+export { default as EmpresaForm } from './EmpresaForm'
 export { default as HeroSection } from './HeroSection'
+export { default as InventarioForm } from './InventarioForm'
 export { default as LoginForm } from './LoginForm'
 export { default as LoginHero } from './LoginHero'
+export { default as NavigationBar } from './NavigationBar'
+export { default as ProductoForm } from './ProductoForm'
 export { default as SectionsGrid } from './SectionsGrid'
 export { default as WorkflowTimeline } from './WorkflowTimeline'

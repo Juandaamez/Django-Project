@@ -1,4 +1,5 @@
-from rest_framework import filters, permissions, viewsets
+from rest_framework import filters, permissions, viewsets, status
+from rest_framework.response import Response
 
 from core.models import Empresa, Inventario, Producto
 from .serializers import (
@@ -30,7 +31,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 class ProductoViewSet(viewsets.ModelViewSet):
 	queryset = Producto.objects.select_related('empresa').all()
 	serializer_class = ProductoSerializer
-	permission_classes = [permissions.IsAuthenticated, IsAdminOrReadOnly]
+	permission_classes = [IsAdminOrReadOnly]  # Público para leer, admin para modificar
 	filter_backends = [filters.SearchFilter, filters.OrderingFilter]
 	search_fields = ['codigo', 'nombre', 'caracteristicas', 'empresa__nombre']
 	ordering_fields = ['nombre', 'codigo', 'empresa__nombre']
@@ -42,6 +43,27 @@ class ProductoViewSet(viewsets.ModelViewSet):
 		if empresa_nit:
 			queryset = queryset.filter(empresa__nit=empresa_nit)
 		return queryset
+
+	def create(self, request, *args, **kwargs):
+		"""
+		Al crear un producto, automáticamente crear un registro en Inventario
+		con la cantidad inicial especificada (default 0)
+		"""
+		serializer = self.get_serializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		producto = serializer.save()
+
+		# Obtener cantidad inicial del request (opcional, default 0)
+		cantidad_inicial = request.data.get('cantidad_inicial', 0)
+		
+		# Crear registro de inventario automáticamente
+		Inventario.objects.create(
+			producto=producto,
+			cantidad=cantidad_inicial
+		)
+
+		headers = self.get_success_headers(serializer.data)
+		return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class InventarioViewSet(viewsets.ModelViewSet):

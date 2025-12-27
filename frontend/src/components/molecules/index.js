@@ -1,8 +1,12 @@
 // Molecules barrel export
 export { default as AlertMessage } from './AlertMessage'
+export { default as ConfirmDialog } from './ConfirmDialog'
+export { default as DataTable } from './DataTable'
 export { default as FeatureCard } from './FeatureCard'
 export { default as FormField } from './FormField'
 export { default as PasswordField } from './PasswordField'
 export { default as RoadmapCard } from './RoadmapCard'
 export { default as SectionCard } from './SectionCard'
 export { default as WorkflowStep } from './WorkflowStep'
+export { default as UserProfileDropdown } from './UserProfileDropdown'
+export { default as WelcomeBanner } from './WelcomeBanner'

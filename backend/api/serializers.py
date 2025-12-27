@@ -34,12 +34,20 @@ class ProductoSerializer(serializers.ModelSerializer):
 
 
 class InventarioSerializer(serializers.ModelSerializer):
+    producto_codigo = serializers.CharField(
+        source='producto.codigo',
+        read_only=True
+    )
     producto_nombre = serializers.CharField(
         source='producto.nombre',
         read_only=True
     )
-    empresa = serializers.CharField(
+    producto_empresa = serializers.CharField(
         source='producto.empresa.nit',
+        read_only=True
+    )
+    producto_empresa_nombre = serializers.CharField(
+        source='producto.empresa.nombre',
         read_only=True
     )
 
@@ -48,8 +56,10 @@ class InventarioSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'producto',
+            'producto_codigo',
             'producto_nombre',
-            'empresa',
+            'producto_empresa',
+            'producto_empresa_nombre',
             'cantidad',
             'fecha_actualizacion',
         ]
