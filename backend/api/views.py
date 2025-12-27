@@ -51,7 +51,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 class ProductoViewSet(viewsets.ModelViewSet):
 	queryset = Producto.objects.select_related('empresa').all()
 	serializer_class = ProductoSerializer
-	permission_classes = [IsAdminOrReadOnly]  # Público para leer, admin para modificar
+	permission_classes = [IsAdminOrReadOnly]
 	filter_backends = [filters.SearchFilter, filters.OrderingFilter]
 	search_fields = ['codigo', 'nombre', 'caracteristicas', 'empresa__nombre']
 	ordering_fields = ['nombre', 'codigo', 'empresa__nombre']
@@ -69,10 +69,8 @@ class ProductoViewSet(viewsets.ModelViewSet):
 		serializer.is_valid(raise_exception=True)
 		producto = serializer.save()
 
-		# Obtener cantidad inicial del request (opcional, default 0)
 		cantidad_inicial = request.data.get('cantidad_inicial', 0)
 		
-		# Crear registro de inventario automáticamente
 		Inventario.objects.create(
 			producto=producto,
 			cantidad=cantidad_inicial
@@ -114,7 +112,6 @@ class GenerarPDFView(APIView):
 
 	def get(self, request, empresa_nit):
 		try:
-			# Obtener empresa
 			empresa = Empresa.objects.get(nit=empresa_nit)
 			empresa_data = {
 				'nit': empresa.nit,
@@ -123,7 +120,6 @@ class GenerarPDFView(APIView):
 				'telefono': empresa.telefono,
 			}
 			
-			# Obtener inventarios
 			inventarios = Inventario.objects.filter(
 				producto__empresa__nit=empresa_nit
 			).select_related('producto')
@@ -138,10 +134,8 @@ class GenerarPDFView(APIView):
 					'fecha_actualizacion': inv.fecha_actualizacion.isoformat() if inv.fecha_actualizacion else None,
 				})
 			
-			# Generar PDF
 			pdf_content = generar_pdf_inventario(empresa_data, inventarios_data)
 			
-			# Retornar PDF
 			response = HttpResponse(pdf_content, content_type='application/pdf')
 			filename = f"Inventario_{empresa.nombre.replace(' ', '_')}_{empresa_nit}.pdf"
 			response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -164,14 +158,12 @@ class EnviarCorreoInventarioView(APIView):
 
 	def post(self, request):
 		try:
-			# Obtener parámetros
 			empresa_nit = request.data.get('empresa_nit')
 			email_destino = request.data.get('email_destino')
 			pdf_base64 = request.data.get('pdf_base64')
 			incluir_analisis_ia = request.data.get('incluir_analisis_ia', True)
 			incluir_blockchain = request.data.get('incluir_blockchain', True)
 			
-			# Validaciones
 			if not empresa_nit:
 				return Response(
 					{'error': 'Se requiere el NIT de la empresa'},
@@ -184,7 +176,6 @@ class EnviarCorreoInventarioView(APIView):
 					status=status.HTTP_400_BAD_REQUEST
 				)
 			
-			# Obtener empresa
 			empresa = Empresa.objects.get(nit=empresa_nit)
 			empresa_data = {
 				'nit': empresa.nit,
@@ -193,7 +184,6 @@ class EnviarCorreoInventarioView(APIView):
 				'telefono': empresa.telefono,
 			}
 			
-			# Obtener inventarios con precios
 			inventarios = Inventario.objects.filter(
 				producto__empresa__nit=empresa_nit
 			).select_related('producto')
@@ -219,13 +209,11 @@ class EnviarCorreoInventarioView(APIView):
 					'fecha_actualizacion': inv.fecha_actualizacion.isoformat() if inv.fecha_actualizacion else None,
 				})
 			
-			# Generar PDF
 			if pdf_base64:
 				pdf_content = base64.b64decode(pdf_base64)
 			else:
 				pdf_content = generar_pdf_inventario(empresa_data, inventarios_data)
 			
-			# Calcular estadísticas
 			total_productos = len(inventarios_data)
 			total_unidades = sum(inv['cantidad'] for inv in inventarios_data)
 			
@@ -254,14 +242,12 @@ class EnviarCorreoInventarioView(APIView):
 			else:
 				html_correo = generar_html_correo(empresa_data, total_productos, total_unidades)
 			
-			# Asunto del correo
 			asunto = f"📦 Reporte de Inventario - {empresa.nombre}"
 			if alertas:
 				criticas = len([a for a in alertas if a.get('prioridad') == 'critica'])
 				if criticas > 0:
 					asunto = f"⚠️ Reporte de Inventario (Alertas) - {empresa.nombre}"
 			
-			# Nombre del archivo
 			nombre_archivo = f"Inventario_{empresa.nombre.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"
 			
 			historial = HistorialEnvio.objects.create(
@@ -288,7 +274,6 @@ class EnviarCorreoInventarioView(APIView):
 					nombre_archivo=nombre_archivo
 				)
 				
-				# Actualizar historial
 				historial.estado = 'enviado'
 				historial.proveedor = 'resend'
 				historial.respuesta_api = resultado
