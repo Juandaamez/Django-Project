@@ -1,8 +1,3 @@
-/**
- * Input Atom - Campo de entrada reutilizable con estilos modernos
- * Soporta iconos, estados de error y diferentes variantes
- */
-
 const Input = ({
   type = 'text',
   placeholder,
@@ -21,7 +16,7 @@ const Input = ({
 }) => {
   const baseClasses = [
     'w-full px-4 py-3.5 rounded-xl',
-    'bg-white/5 backdrop-blur-sm',
+    'bg-white/5',
     'border transition-all duration-300',
     'text-white placeholder-white/40',
     'focus:outline-none focus:ring-2',

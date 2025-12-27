@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.models import Empresa, Producto, Inventario
+from core.models import Empresa, Producto, Inventario, HistorialEnvio
 
 
 class EmpresaSerializer(serializers.ModelSerializer):
@@ -64,3 +64,61 @@ class InventarioSerializer(serializers.ModelSerializer):
             'fecha_actualizacion',
         ]
         read_only_fields = ['fecha_actualizacion']
+
+
+class HistorialEnvioSerializer(serializers.ModelSerializer):
+    """
+    Serializer para el historial de envíos de inventario.
+    Incluye información de blockchain, análisis IA y metadatos.
+    """
+    empresa_nombre = serializers.CharField(
+        source='empresa.nombre',
+        read_only=True
+    )
+    empresa_nit = serializers.CharField(
+        source='empresa.nit',
+        read_only=True
+    )
+    usuario_email = serializers.CharField(
+        source='usuario.email',
+        read_only=True
+    )
+    usuario_nombre = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = HistorialEnvio
+        fields = [
+            'id',
+            'empresa',
+            'empresa_nit',
+            'empresa_nombre',
+            'usuario',
+            'usuario_email',
+            'usuario_nombre',
+            'email_destino',
+            'asunto',
+            'estado',
+            'proveedor',
+            # Blockchain
+            'documento_hash',
+            'contenido_hash',
+            # Métricas
+            'total_productos',
+            'total_unidades',
+            'valor_inventario',
+            # IA
+            'resumen_ia',
+            'alertas_ia',
+            # Respuesta
+            'respuesta_api',
+            'mensaje_error',
+            # Timestamps
+            'fecha_creacion',
+            'fecha_envio',
+        ]
+        read_only_fields = '__all__'
+    
+    def get_usuario_nombre(self, obj):
+        if obj.usuario:
+            return obj.usuario.get_full_name() or obj.usuario.username
+        return None

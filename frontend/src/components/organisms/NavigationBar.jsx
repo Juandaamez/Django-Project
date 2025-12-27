@@ -1,7 +1,3 @@
-/**
- * NavigationBar - Organismo para la barra de navegación principal
- * Incluye logo, navegación y perfil de usuario (si está autenticado)
- */
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../atoms/Button'
