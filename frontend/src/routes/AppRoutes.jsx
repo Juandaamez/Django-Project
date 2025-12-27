@@ -1,14 +1,10 @@
-/**
- * AppRoutes - Configuración de rutas de la aplicación
- * Incluye rutas públicas y protegidas
- */
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-// Pages
 import LoginPage from '../pages/LoginPage'
 import EmpresasPage from '../pages/EmpresasPage'
 import InventarioPage from '../pages/InventarioPage'
+import IABetaPage from '../pages/IABetaPage'
 import LandingTemplate from '../components/templates/LandingTemplate'
 
 // Landing content (movido desde App.jsx)
@@ -207,7 +203,7 @@ const AppRoutes = () => {
         path="/ia-beta"
         element={
           <ProtectedRoute>
-            <PlaceholderPage title="IA + Blockchain Beta" />
+            <IABetaPage />
           </ProtectedRoute>
         }
       />
