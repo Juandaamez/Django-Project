@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import empresaService from '../services/empresa.service'
 import inventarioService from '../services/inventario.service'
+import { descargarPDFInventario, obtenerPDFBase64 } from '../services/pdfGenerator'
 import NavigationBar from '../components/organisms/NavigationBar'
 import InventarioForm from '../components/organisms/InventarioForm'
 import ConfirmDialog from '../components/molecules/ConfirmDialog'
@@ -99,6 +100,8 @@ const InventarioPage = () => {
   const [selectedInventario, setSelectedInventario] = useState(null)
   const [emailDestino, setEmailDestino] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isPDFGenerating, setIsPDFGenerating] = useState(false)
+  const [isSendingEmail, setIsSendingEmail] = useState(false)
 
   // Cargar empresas
   const loadEmpresas = useCallback(async () => {
@@ -240,8 +243,26 @@ const InventarioPage = () => {
 
   // Handlers para PDF y Email
   const handleDownloadPDF = async (empresa) => {
-    // TODO: Implementar generación de PDF
-    setSuccessMessage(`📄 Generando PDF del inventario de ${empresa.nombre}... (Próximamente)`)
+    try {
+      setIsPDFGenerating(true)
+      setError(null)
+      
+      // Obtener inventarios de la empresa si no los tenemos
+      let inventarios = empresaInventarios[empresa.nit]
+      if (!inventarios) {
+        inventarios = await inventarioService.getByEmpresa(empresa.nit)
+        setEmpresaInventarios(prev => ({ ...prev, [empresa.nit]: inventarios }))
+      }
+      
+      // Generar PDF en el frontend con diseño profesional
+      const fileName = descargarPDFInventario(empresa, inventarios)
+      setSuccessMessage(`📄 PDF generado exitosamente: ${fileName}`)
+    } catch (err) {
+      console.error('Error generando PDF:', err)
+      setError('No se pudo generar el PDF. Intenta de nuevo.')
+    } finally {
+      setIsPDFGenerating(false)
+    }
   }
 
   const handleOpenEmailModal = (empresa) => {
@@ -255,10 +276,42 @@ const InventarioPage = () => {
       setError('Por favor ingresa un correo válido')
       return
     }
-    // TODO: Implementar envío de correo
-    setSuccessMessage(`📧 Enviando inventario de ${selectedEmpresa.nombre} a ${emailDestino}... (Próximamente)`)
-    setIsEmailModalOpen(false)
-    setEmailDestino('')
+    
+    try {
+      setIsSendingEmail(true)
+      setError(null)
+      
+      // Obtener inventarios de la empresa si no los tenemos
+      let inventarios = empresaInventarios[selectedEmpresa.nit]
+      if (!inventarios) {
+        inventarios = await inventarioService.getByEmpresa(selectedEmpresa.nit)
+        setEmpresaInventarios(prev => ({ ...prev, [selectedEmpresa.nit]: inventarios }))
+      }
+      
+      // Generar PDF en Base64 para enviar al servidor
+      const pdfBase64 = obtenerPDFBase64(selectedEmpresa, inventarios)
+      
+      // Enviar correo via API REST del servidor
+      const resultado = await inventarioService.enviarPorCorreo(
+        selectedEmpresa.nit,
+        emailDestino,
+        pdfBase64
+      )
+      
+      if (resultado.success) {
+        setSuccessMessage(`📧 Correo enviado exitosamente a ${emailDestino}`)
+        setIsEmailModalOpen(false)
+        setEmailDestino('')
+      } else {
+        throw new Error(resultado.error || 'Error al enviar el correo')
+      }
+    } catch (err) {
+      console.error('Error enviando correo:', err)
+      const errorMsg = err.response?.data?.error || err.response?.data?.suggestion || err.message || 'Error al enviar el correo'
+      setError(`${errorMsg}. Puedes descargar el PDF y enviarlo manualmente.`)
+    } finally {
+      setIsSendingEmail(false)
+    }
   }
 
   // Limpiar mensajes
@@ -383,8 +436,13 @@ const InventarioPage = () => {
                             onClick={() => handleDownloadPDF(empresa)}
                             className="flex items-center gap-2"
                             title="Descargar PDF"
+                            disabled={isPDFGenerating}
                           >
-                            <DownloadIcon />
+                            {isPDFGenerating ? (
+                              <Spinner size="sm" className="text-brand-primary" />
+                            ) : (
+                              <DownloadIcon />
+                            )}
                             <span className="hidden sm:inline">PDF</span>
                           </Button>
                           <Button
@@ -557,7 +615,7 @@ const InventarioPage = () => {
       {/* Modal de Email */}
       <Modal
         isOpen={isEmailModalOpen}
-        onClose={() => setIsEmailModalOpen(false)}
+        onClose={() => !isSendingEmail && setIsEmailModalOpen(false)}
         title={`📧 Enviar Inventario - ${selectedEmpresa?.nombre || ''}`}
         size="sm"
       >
@@ -574,16 +632,43 @@ const InventarioPage = () => {
               value={emailDestino}
               onChange={(e) => setEmailDestino(e.target.value)}
               placeholder="correo@ejemplo.com"
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20"
+              disabled={isSendingEmail}
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 disabled:opacity-50"
             />
           </div>
+          
+          {/* Nota informativa */}
+          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+            <p className="text-xs text-amber-200/80">
+              💡 <strong>Nota:</strong> Para el envío de correos es necesario configurar la API key de Resend o las credenciales SMTP en el servidor.
+            </p>
+          </div>
+          
           <div className="flex gap-3 pt-4">
-            <Button variant="ghost" onClick={() => setIsEmailModalOpen(false)} className="flex-1">
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsEmailModalOpen(false)} 
+              className="flex-1"
+              disabled={isSendingEmail}
+            >
               Cancelar
             </Button>
-            <Button onClick={handleSendEmail} className="flex-1 flex items-center justify-center gap-2">
-              <MailIcon />
-              Enviar
+            <Button 
+              onClick={handleSendEmail} 
+              className="flex-1 flex items-center justify-center gap-2"
+              disabled={isSendingEmail || !emailDestino}
+            >
+              {isSendingEmail ? (
+                <>
+                  <Spinner size="sm" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <MailIcon />
+                  Enviar
+                </>
+              )}
             </Button>
           </div>
         </div>

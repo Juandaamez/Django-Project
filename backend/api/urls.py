@@ -2,7 +2,13 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from .authentication import LoginView
-from .views import EmpresaViewSet, InventarioViewSet, ProductoViewSet
+from .views import (
+	EmpresaViewSet,
+	InventarioViewSet,
+	ProductoViewSet,
+	GenerarPDFView,
+	EnviarCorreoInventarioView,
+)
 
 router = DefaultRouter()
 router.register('empresas', EmpresaViewSet, basename='empresa')
@@ -11,6 +17,9 @@ router.register('inventarios', InventarioViewSet, basename='inventario')
 
 urlpatterns = [
 	path('auth/login/', LoginView.as_view(), name='auth-login'),
+	# Endpoints para PDF y correo
+	path('inventarios/pdf/<str:empresa_nit>/', GenerarPDFView.as_view(), name='inventario-pdf'),
+	path('inventarios/enviar-correo/', EnviarCorreoInventarioView.as_view(), name='inventario-enviar-correo'),
 ]
 
 urlpatterns += router.urls
