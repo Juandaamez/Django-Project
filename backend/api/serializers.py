@@ -116,7 +116,30 @@ class HistorialEnvioSerializer(serializers.ModelSerializer):
             'fecha_creacion',
             'fecha_envio',
         ]
-        read_only_fields = '__all__'
+        read_only_fields = [
+            'id',
+            'empresa',
+            'empresa_nit',
+            'empresa_nombre',
+            'usuario',
+            'usuario_email',
+            'usuario_nombre',
+            'email_destino',
+            'asunto',
+            'estado',
+            'proveedor',
+            'documento_hash',
+            'contenido_hash',
+            'total_productos',
+            'total_unidades',
+            'valor_inventario',
+            'resumen_ia',
+            'alertas_ia',
+            'respuesta_api',
+            'mensaje_error',
+            'fecha_creacion',
+            'fecha_envio',
+        ]
     
     def get_usuario_nombre(self, obj):
         if obj.usuario:
