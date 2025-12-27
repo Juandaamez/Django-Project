@@ -12,8 +12,7 @@ function NavigationBar() {
 
   const navigationLinks = [
     { label: 'Inicio', href: '/' },
-    { label: 'Empresas', href: '/empresas', protected: true },
-    { label: 'Productos', href: '/productos', protected: true },
+    { label: 'Empresas', href: '/empresas', protected: false }, // Público para todos
     { label: 'Inventario', href: '/inventario', protected: true },
     { label: 'IA Beta', href: '/ia-beta', protected: true },
   ]

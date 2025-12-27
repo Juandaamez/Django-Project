@@ -7,6 +7,8 @@ import { useAuth } from '../context/AuthContext'
 
 // Pages
 import LoginPage from '../pages/LoginPage'
+import EmpresasPage from '../pages/EmpresasPage'
+import InventarioPage from '../pages/InventarioPage'
 import LandingTemplate from '../components/templates/LandingTemplate'
 
 // Landing content (movido desde App.jsx)
@@ -190,29 +192,14 @@ const AppRoutes = () => {
       {/* Rutas públicas */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/empresas" element={<EmpresasPage />} />
       
       {/* Rutas protegidas */}
-      <Route
-        path="/empresas"
-        element={
-          <ProtectedRoute>
-            <PlaceholderPage title="Gestión de Empresas" />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/productos"
-        element={
-          <ProtectedRoute>
-            <PlaceholderPage title="Catálogo de Productos" />
-          </ProtectedRoute>
-        }
-      />
       <Route
         path="/inventario"
         element={
           <ProtectedRoute>
-            <PlaceholderPage title="Panel de Inventario" />
+            <InventarioPage />
           </ProtectedRoute>
         }
       />
