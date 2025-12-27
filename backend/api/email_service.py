@@ -1,17 +1,3 @@
-"""
-Servicio de generación de PDF y envío de correos
-Utiliza ReportLab para generar PDFs del lado del servidor
-y una API REST (Resend/SendGrid) para enviar correos
-
-Diseño: Moderno, Minimalista y Profesional
-
-Características:
-- Generación de PDF con diseño profesional
-- Certificación Blockchain con hash SHA-256
-- Código QR de verificación
-- Análisis inteligente con IA
-- Envío via Resend API o Django SMTP
-"""
 import base64
 import hashlib
 import io

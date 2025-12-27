@@ -1,18 +1,3 @@
-"""
-Servicio de Análisis Inteligente de Inventario (IA)
-
-Este módulo proporciona análisis automático del inventario usando
-técnicas de análisis de datos para generar:
-- Alertas de stock bajo/agotado
-- Recomendaciones de reabastecimiento
-- Análisis de valor del inventario
-- Detección de patrones y anomalías
-- Resúmenes ejecutivos inteligentes
-
-Nota: Para IA más avanzada (GPT, Claude, etc.), configurar:
-- OPENAI_API_KEY para análisis con GPT
-- ANTHROPIC_API_KEY para análisis con Claude
-"""
 import json
 import os
 from datetime import datetime
@@ -34,12 +19,6 @@ except ImportError:
 
 
 class AnalisisInventarioIA:
-    """
-    Motor de análisis inteligente para inventarios.
-    Proporciona insights, alertas y recomendaciones automáticas.
-    """
-    
-    # Umbrales configurables
     UMBRAL_STOCK_CRITICO = 0
     UMBRAL_STOCK_BAJO = 10
     UMBRAL_STOCK_MEDIO = 50
@@ -54,7 +33,6 @@ class AnalisisInventarioIA:
         self._calcular_metricas()
     
     def _calcular_metricas(self):
-        """Calcula métricas base del inventario"""
         self.total_productos = len(self.inventarios)
         self.total_unidades = sum(inv.get('cantidad', 0) for inv in self.inventarios)
         
@@ -100,12 +78,6 @@ class AnalisisInventarioIA:
             self.pct_stock_saludable = 100
     
     def generar_alertas(self) -> List[Dict]:
-        """
-        Genera alertas inteligentes basadas en el análisis del inventario.
-        
-        Returns:
-            Lista de alertas con prioridad, tipo y mensaje
-        """
         alertas = []
         
         # 🔴 Alerta crítica: Productos sin stock
@@ -172,12 +144,6 @@ class AnalisisInventarioIA:
         return alertas
     
     def generar_resumen_ejecutivo(self) -> str:
-        """
-        Genera un resumen ejecutivo inteligente del inventario.
-        
-        Returns:
-            Texto con el resumen ejecutivo
-        """
         fecha_str = self.fecha_analisis.strftime('%d de %B de %Y')
         hora_str = self.fecha_analisis.strftime('%H:%M')
         
@@ -219,12 +185,6 @@ Fecha de análisis: {fecha_str} a las {hora_str}
         return resumen.strip()
     
     def generar_recomendaciones(self) -> List[Dict]:
-        """
-        Genera recomendaciones inteligentes basadas en el análisis.
-        
-        Returns:
-            Lista de recomendaciones con prioridad y detalles
-        """
         recomendaciones = []
         
         # Recomendaciones de reabastecimiento
@@ -309,25 +269,11 @@ def analizar_inventario(empresa: dict, inventarios: list) -> Dict:
 
 
 def generar_resumen_para_correo(empresa: dict, inventarios: list) -> Tuple[str, List[Dict]]:
-    """
-    Genera resumen y alertas optimizados para incluir en correo.
-    
-    Returns:
-        Tupla con (resumen_texto, lista_alertas)
-    """
     analizador = AnalisisInventarioIA(empresa, inventarios)
     return analizador.generar_resumen_ejecutivo(), analizador.generar_alertas()
 
 
-# ═══════════════════════════════════════════════════════════════
-# INTEGRACIÓN CON APIs DE IA EXTERNAS (Opcional)
-# ═══════════════════════════════════════════════════════════════
-
 def generar_resumen_con_openai(empresa: dict, inventarios: list) -> str:
-    """
-    Genera un resumen usando OpenAI GPT (si está configurado).
-    Requiere: pip install openai y OPENAI_API_KEY
-    """
     if not OPENAI_DISPONIBLE:
         return "OpenAI no está disponible. Instala: pip install openai"
     
@@ -373,10 +319,6 @@ def generar_resumen_con_openai(empresa: dict, inventarios: list) -> str:
 
 
 def generar_resumen_con_anthropic(empresa: dict, inventarios: list) -> str:
-    """
-    Genera un resumen usando Anthropic Claude (si está configurado).
-    Requiere: pip install anthropic y ANTHROPIC_API_KEY
-    """
     if not ANTHROPIC_DISPONIBLE:
         return "Anthropic no está disponible. Instala: pip install anthropic"
     

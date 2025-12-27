@@ -64,10 +64,6 @@ class ProductoViewSet(viewsets.ModelViewSet):
 		return queryset
 
 	def create(self, request, *args, **kwargs):
-		"""
-		Al crear un producto, automáticamente crear un registro en Inventario
-		con la cantidad inicial especificada (default 0)
-		"""
 		serializer = self.get_serializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
 		producto = serializer.save()
@@ -113,10 +109,6 @@ class InventarioViewSet(viewsets.ModelViewSet):
 
 
 class GenerarPDFView(APIView):
-	"""
-	Vista para generar PDF del inventario de una empresa
-	GET /api/inventarios/pdf/{empresa_nit}/
-	"""
 	permission_classes = [IsAuthenticated]
 
 	def get(self, request, empresa_nit):
@@ -167,27 +159,6 @@ class GenerarPDFView(APIView):
 
 
 class EnviarCorreoInventarioView(APIView):
-	"""
-	Vista para enviar el PDF del inventario por correo
-	
-	POST /api/inventarios/enviar-correo/
-	
-	Body:
-	{
-		empresa_nit: string (requerido),
-		email_destino: string (requerido),
-		pdf_base64: string (opcional - PDF generado en frontend),
-		incluir_analisis_ia: boolean (opcional - incluir análisis inteligente),
-		incluir_blockchain: boolean (opcional - incluir certificación blockchain)
-	}
-	
-	Funcionalidades:
-	- Generación de PDF profesional
-	- Análisis inteligente con IA (alertas, recomendaciones)
-	- Certificación Blockchain con hash SHA-256
-	- Historial de envíos
-	- Envío via Resend API o Django SMTP
-	"""
 	permission_classes = [IsAuthenticated]
 
 	def post(self, request):
@@ -257,9 +228,6 @@ class EnviarCorreoInventarioView(APIView):
 			total_productos = len(inventarios_data)
 			total_unidades = sum(inv['cantidad'] for inv in inventarios_data)
 			
-			# ═══════════════════════════════════════════════════════════
-			# ANÁLISIS IA
-			# ═══════════════════════════════════════════════════════════
 			alertas = []
 			resumen_ia = ""
 			if incluir_analisis_ia:
@@ -268,18 +236,12 @@ class EnviarCorreoInventarioView(APIView):
 				except Exception as ia_error:
 					print(f"Error en análisis IA: {ia_error}")
 			
-			# ═══════════════════════════════════════════════════════════
-			# CERTIFICACIÓN BLOCKCHAIN
-			# ═══════════════════════════════════════════════════════════
 			hash_documento = None
 			hash_contenido = None
 			if incluir_blockchain:
 				hash_documento = generar_hash_documento(pdf_content)
 				hash_contenido = generar_hash_inventario(inventarios_data)
 			
-			# ═══════════════════════════════════════════════════════════
-			# GENERAR HTML DEL CORREO
-			# ═══════════════════════════════════════════════════════════
 			if incluir_analisis_ia or incluir_blockchain:
 				html_correo = generar_html_correo_avanzado(
 					empresa_data,
@@ -301,9 +263,6 @@ class EnviarCorreoInventarioView(APIView):
 			# Nombre del archivo
 			nombre_archivo = f"Inventario_{empresa.nombre.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"
 			
-			# ═══════════════════════════════════════════════════════════
-			# CREAR REGISTRO DE HISTORIAL
-			# ═══════════════════════════════════════════════════════════
 			historial = HistorialEnvio.objects.create(
 				empresa=empresa,
 				usuario=request.user,
@@ -319,9 +278,6 @@ class EnviarCorreoInventarioView(APIView):
 				alertas_ia=alertas,
 			)
 			
-			# ═══════════════════════════════════════════════════════════
-			# ENVIAR CORREO
-			# ═══════════════════════════════════════════════════════════
 			try:
 				resultado = enviar_correo_resend(
 					destinatario=email_destino,
@@ -408,14 +364,6 @@ class EnviarCorreoInventarioView(APIView):
 
 
 class HistorialEnviosViewSet(viewsets.ReadOnlyModelViewSet):
-	"""
-	ViewSet para consultar el historial de envíos de inventario.
-	Solo lectura - los registros se crean automáticamente al enviar correos.
-	
-	GET /api/historial-envios/ - Lista todos los envíos
-	GET /api/historial-envios/{id}/ - Detalle de un envío
-	GET /api/historial-envios/?empresa={nit} - Filtrar por empresa
-	"""
 	queryset = HistorialEnvio.objects.select_related('empresa', 'usuario').all()
 	serializer_class = HistorialEnvioSerializer
 	permission_classes = [IsAuthenticated]
@@ -433,14 +381,6 @@ class HistorialEnviosViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class AnalisisInventarioView(APIView):
-	"""
-	Vista para obtener análisis IA del inventario sin enviar correo.
-	
-	GET /api/inventarios/analisis/{empresa_nit}/
-	
-	Returns:
-		Análisis completo con métricas, alertas y recomendaciones
-	"""
 	permission_classes = [IsAuthenticated]
 	
 	def get(self, request, empresa_nit):

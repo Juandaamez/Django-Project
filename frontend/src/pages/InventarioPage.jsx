@@ -1,7 +1,3 @@
-/**
- * InventarioPage - Vista de inventario por empresa
- * Muestra empresas con sus productos (inventario) y opciones de exportar PDF/enviar correo
- */
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
