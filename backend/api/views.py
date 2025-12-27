@@ -1,11 +1,24 @@
+import base64
+import json
+
+from django.http import HttpResponse
 from rest_framework import filters, permissions, viewsets, status
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from core.models import Empresa, Inventario, Producto
 from .serializers import (
 	EmpresaSerializer,
 	InventarioSerializer,
 	ProductoSerializer,
+)
+from .email_service import (
+	generar_pdf_inventario,
+	generar_html_correo,
+	enviar_correo_resend,
+	enviar_correo_django,
 )
 
 
@@ -91,3 +104,182 @@ class InventarioViewSet(viewsets.ModelViewSet):
 		if producto_codigo:
 			queryset = queryset.filter(producto__codigo=producto_codigo)
 		return queryset
+
+
+class GenerarPDFView(APIView):
+	"""
+	Vista para generar PDF del inventario de una empresa
+	GET /api/inventarios/pdf/{empresa_nit}/
+	"""
+	permission_classes = [IsAuthenticated]
+
+	def get(self, request, empresa_nit):
+		try:
+			# Obtener empresa
+			empresa = Empresa.objects.get(nit=empresa_nit)
+			empresa_data = {
+				'nit': empresa.nit,
+				'nombre': empresa.nombre,
+				'direccion': empresa.direccion,
+				'telefono': empresa.telefono,
+			}
+			
+			# Obtener inventarios
+			inventarios = Inventario.objects.filter(
+				producto__empresa__nit=empresa_nit
+			).select_related('producto')
+			
+			inventarios_data = []
+			for inv in inventarios:
+				inventarios_data.append({
+					'id': inv.id,
+					'producto_codigo': inv.producto.codigo,
+					'producto_nombre': inv.producto.nombre,
+					'cantidad': inv.cantidad,
+					'fecha_actualizacion': inv.fecha_actualizacion.isoformat() if inv.fecha_actualizacion else None,
+				})
+			
+			# Generar PDF
+			pdf_content = generar_pdf_inventario(empresa_data, inventarios_data)
+			
+			# Retornar PDF
+			response = HttpResponse(pdf_content, content_type='application/pdf')
+			filename = f"Inventario_{empresa.nombre.replace(' ', '_')}_{empresa_nit}.pdf"
+			response['Content-Disposition'] = f'attachment; filename="{filename}"'
+			return response
+			
+		except Empresa.DoesNotExist:
+			return Response(
+				{'error': 'Empresa no encontrada'},
+				status=status.HTTP_404_NOT_FOUND
+			)
+		except Exception as e:
+			return Response(
+				{'error': str(e)},
+				status=status.HTTP_500_INTERNAL_SERVER_ERROR
+			)
+
+
+class EnviarCorreoInventarioView(APIView):
+	"""
+	Vista para enviar el PDF del inventario por correo
+	POST /api/inventarios/enviar-correo/
+	Body: { empresa_nit, email_destino, pdf_base64 (opcional) }
+	"""
+	permission_classes = [IsAuthenticated]
+
+	def post(self, request):
+		try:
+			empresa_nit = request.data.get('empresa_nit')
+			email_destino = request.data.get('email_destino')
+			pdf_base64 = request.data.get('pdf_base64')  # PDF generado en frontend
+			
+			if not empresa_nit:
+				return Response(
+					{'error': 'Se requiere el NIT de la empresa'},
+					status=status.HTTP_400_BAD_REQUEST
+				)
+			
+			if not email_destino:
+				return Response(
+					{'error': 'Se requiere el correo de destino'},
+					status=status.HTTP_400_BAD_REQUEST
+				)
+			
+			# Obtener empresa
+			empresa = Empresa.objects.get(nit=empresa_nit)
+			empresa_data = {
+				'nit': empresa.nit,
+				'nombre': empresa.nombre,
+				'direccion': empresa.direccion,
+				'telefono': empresa.telefono,
+			}
+			
+			# Obtener inventarios
+			inventarios = Inventario.objects.filter(
+				producto__empresa__nit=empresa_nit
+			).select_related('producto')
+			
+			inventarios_data = []
+			for inv in inventarios:
+				inventarios_data.append({
+					'id': inv.id,
+					'producto_codigo': inv.producto.codigo,
+					'producto_nombre': inv.producto.nombre,
+					'cantidad': inv.cantidad,
+					'fecha_actualizacion': inv.fecha_actualizacion.isoformat() if inv.fecha_actualizacion else None,
+				})
+			
+			# Si se envió PDF desde frontend, usar ese; sino, generar uno nuevo
+			if pdf_base64:
+				pdf_content = base64.b64decode(pdf_base64)
+			else:
+				pdf_content = generar_pdf_inventario(empresa_data, inventarios_data)
+			
+			# Calcular estadísticas para el correo
+			total_productos = len(inventarios_data)
+			total_unidades = sum(inv['cantidad'] for inv in inventarios_data)
+			
+			# Generar HTML del correo
+			html_correo = generar_html_correo(empresa_data, total_productos, total_unidades)
+			
+			# Asunto del correo
+			asunto = f"📦 Reporte de Inventario - {empresa.nombre}"
+			
+			# Nombre del archivo
+			nombre_archivo = f"Inventario_{empresa.nombre.replace(' ', '_')}.pdf"
+			
+			# Intentar enviar con Resend (API REST)
+			try:
+				resultado = enviar_correo_resend(
+					destinatario=email_destino,
+					asunto=asunto,
+					cuerpo_html=html_correo,
+					adjunto_pdf=pdf_content,
+					nombre_archivo=nombre_archivo
+				)
+				return Response({
+					'success': True,
+					'message': f'Correo enviado exitosamente a {email_destino}',
+					'provider': 'resend',
+					'details': resultado
+				})
+			except ValueError as ve:
+				# Si no hay API key de Resend, intentar con Django Email
+				try:
+					enviados = enviar_correo_django(
+						destinatario=email_destino,
+						asunto=asunto,
+						cuerpo=html_correo,
+						adjunto_pdf=pdf_content,
+						nombre_archivo=nombre_archivo
+					)
+					if enviados > 0:
+						return Response({
+							'success': True,
+							'message': f'Correo enviado exitosamente a {email_destino}',
+							'provider': 'django_smtp'
+						})
+					else:
+						return Response({
+							'success': False,
+							'error': 'No se pudo enviar el correo',
+							'suggestion': 'Configura RESEND_API_KEY o las credenciales SMTP de Django'
+						}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+				except Exception as smtp_error:
+					return Response({
+						'success': False,
+						'error': f'Error enviando correo: {str(smtp_error)}',
+						'suggestion': 'Configura RESEND_API_KEY en las variables de entorno o settings.py'
+					}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+			
+		except Empresa.DoesNotExist:
+			return Response(
+				{'error': 'Empresa no encontrada'},
+				status=status.HTTP_404_NOT_FOUND
+			)
+		except Exception as e:
+			return Response(
+				{'error': str(e)},
+				status=status.HTTP_500_INTERNAL_SERVER_ERROR
+			)

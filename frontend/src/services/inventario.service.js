@@ -102,6 +102,34 @@ const inventarioService = {
       params: { search: searchTerm }
     })
     return response.data
+  },
+
+  /**
+   * Descargar PDF del inventario desde el servidor
+   * @param {string} empresaNit - NIT de la empresa
+   * @returns {Promise<Blob>} Blob del PDF
+   */
+  async descargarPDFServidor(empresaNit) {
+    const response = await api.get(`${ENDPOINT}/pdf/${empresaNit}/`, {
+      responseType: 'blob'
+    })
+    return response.data
+  },
+
+  /**
+   * Enviar PDF del inventario por correo usando la API REST del servidor
+   * @param {string} empresaNit - NIT de la empresa
+   * @param {string} emailDestino - Correo de destino
+   * @param {string} pdfBase64 - PDF en Base64 (opcional, generado en frontend)
+   * @returns {Promise<Object>} Resultado del envío
+   */
+  async enviarPorCorreo(empresaNit, emailDestino, pdfBase64 = null) {
+    const response = await api.post(`${ENDPOINT}/enviar-correo/`, {
+      empresa_nit: empresaNit,
+      email_destino: emailDestino,
+      pdf_base64: pdfBase64
+    })
+    return response.data
   }
 }
 
