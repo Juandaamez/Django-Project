@@ -1,0 +1,31 @@
+# Render.com Configuration
+# Este archivo configura el despliegue automático en Render
+
+databases:
+  - name: django-project-db
+    databaseName: django_db
+    user: django_user
+    plan: free
+    region: oregon
+
+services:
+  - type: web
+    name: django-project-api
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: django-project-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "false"
+      - key: PYTHON_VERSION
+        value: "3.11.4"
+      - key: FRONTEND_URL
+        sync: false  # Se configura manualmente después del deploy del frontend

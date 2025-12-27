@@ -2,12 +2,14 @@
 frontend/.env
 frontend/.env.local
 frontend/.env.*.local
+backend/.env
 
 # Dependencies
 node_modules/
 
 # Build outputs
 frontend/dist/
+backend/staticfiles/
 
 # Python
 __pycache__/
@@ -19,9 +21,10 @@ backend/db.sqlite3
 *.sqlite3
 
 # Virtual environment
-# venv/
-# .venv/
-# env/
+backend/.venv/
+venv/
+.venv/
+env/
 
 # IDE
 .vscode/
