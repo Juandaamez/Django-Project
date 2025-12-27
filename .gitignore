@@ -1,0 +1,34 @@
+# Environment variables
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build outputs
+frontend/dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+backend/db.sqlite3
+*.sqlite3
+
+# Virtual environment
+# venv/
+# .venv/
+# env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
