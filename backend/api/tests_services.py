@@ -1,6 +1,3 @@
-"""
-Tests unitarios para servicios (email, hash, IA).
-"""
 import hashlib
 from unittest.mock import patch, MagicMock
 
@@ -15,10 +12,8 @@ from .email_service import (
 
 
 class HashServiceTest(TestCase):
-    """Tests para servicios de hash/blockchain"""
     
     def test_generar_hash_documento(self):
-        """Test: Generar hash de documento PDF"""
         pdf_content = b'contenido de prueba del PDF'
         hash_result = generar_hash_documento(pdf_content)
         
@@ -27,20 +22,17 @@ class HashServiceTest(TestCase):
         self.assertTrue(all(c in '0123456789abcdef' for c in hash_result))
     
     def test_generar_hash_documento_consistente(self):
-        """Test: El mismo contenido genera el mismo hash"""
         pdf_content = b'contenido de prueba'
         hash1 = generar_hash_documento(pdf_content)
         hash2 = generar_hash_documento(pdf_content)
         self.assertEqual(hash1, hash2)
     
     def test_generar_hash_documento_diferente(self):
-        """Test: Contenido diferente genera hash diferente"""
         hash1 = generar_hash_documento(b'contenido 1')
         hash2 = generar_hash_documento(b'contenido 2')
         self.assertNotEqual(hash1, hash2)
     
     def test_generar_hash_inventario(self):
-        """Test: Generar hash de datos de inventario"""
         inventarios_data = [
             {'producto_codigo': 'PROD-001', 'cantidad': 100},
             {'producto_codigo': 'PROD-002', 'cantidad': 200},
@@ -68,7 +60,6 @@ class HashServiceTest(TestCase):
 
 
 class HTMLCorreoServiceTest(TestCase):
-    """Tests para generación de HTML de correo"""
     
     def setUp(self):
         self.empresa_data = {
@@ -79,7 +70,6 @@ class HTMLCorreoServiceTest(TestCase):
         }
     
     def test_generar_html_correo_basico(self):
-        """Test: Generar HTML de correo básico"""
         html = generar_html_correo(
             self.empresa_data,
             total_productos=10,
@@ -93,7 +83,6 @@ class HTMLCorreoServiceTest(TestCase):
         self.assertIn('<html', html.lower())
     
     def test_generar_html_correo_avanzado(self):
-        """Test: Generar HTML de correo avanzado con alertas"""
         alertas = [
             {'mensaje': 'Stock bajo', 'prioridad': 'alta'},
             {'mensaje': 'Revisar precios', 'prioridad': 'media'},
@@ -111,7 +100,6 @@ class HTMLCorreoServiceTest(TestCase):
         self.assertIn('<html', html.lower())
     
     def test_generar_html_correo_sin_alertas(self):
-        """Test: HTML avanzado sin alertas"""
         html = generar_html_correo_avanzado(
             self.empresa_data,
             total_productos=5,
@@ -125,7 +113,6 @@ class HTMLCorreoServiceTest(TestCase):
 
 
 class PDFServiceTest(TestCase):
-    """Tests para generación de PDF"""
     
     def setUp(self):
         self.empresa_data = {
@@ -152,7 +139,6 @@ class PDFServiceTest(TestCase):
         ]
     
     def test_generar_pdf_inventario(self):
-        """Test: Generar PDF de inventario"""
         from .email_service import generar_pdf_inventario
         
         pdf_content = generar_pdf_inventario(
@@ -164,7 +150,6 @@ class PDFServiceTest(TestCase):
         self.assertTrue(pdf_content.startswith(b'%PDF'))
     
     def test_generar_pdf_inventario_vacio(self):
-        """Test: Generar PDF con inventario vacío"""
         from .email_service import generar_pdf_inventario
         
         pdf_content = generar_pdf_inventario(
@@ -177,7 +162,6 @@ class PDFServiceTest(TestCase):
 
 
 class EmailSendServiceTest(TestCase):
-    """Tests para envío de correos"""
     
     @patch('api.email_service.resend')
     def test_enviar_correo_resend_sin_api_key(self, mock_resend):
@@ -199,7 +183,6 @@ class EmailSendServiceTest(TestCase):
     
     @patch('api.email_service.resend')
     def test_enviar_correo_resend_exitoso(self, mock_resend):
-        """Test: Enviar correo con Resend exitosamente"""
         from .email_service import enviar_correo_resend
         
         mock_resend.Emails.send.return_value = {'id': 'test-email-id'}
