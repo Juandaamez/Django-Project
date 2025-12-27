@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_spectacular',
     'corsheaders',
     'core',
     'api',
@@ -159,6 +160,31 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# ═══════════════════════════════════════════════════════════════
+# CONFIGURACIÓN DE SWAGGER / OPENAPI (drf-spectacular)
+# ═══════════════════════════════════════════════════════════════
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API de Inventario - Lite Thinking',
+    'DESCRIPTION': 'API REST para gestión de inventarios, empresas, productos y análisis con IA',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': False,
+    },
+    'TAGS': [
+        {'name': 'Empresas', 'description': 'Gestión de empresas'},
+        {'name': 'Productos', 'description': 'Gestión de productos'},
+        {'name': 'Inventario', 'description': 'Gestión de inventario'},
+        {'name': 'Reportes', 'description': 'Generación de PDFs y envío de correos'},
+        {'name': 'IA', 'description': 'Análisis con Inteligencia Artificial'},
+        {'name': 'Auth', 'description': 'Autenticación JWT'},
+    ],
 }
 
 

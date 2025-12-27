@@ -4,6 +4,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema
 
 User = get_user_model()
 
@@ -47,9 +48,24 @@ class LoginSerializer(serializers.Serializer):
         }
 
 
+class LoginResponseSerializer(serializers.Serializer):
+    """Serializer para documentar la respuesta del login"""
+    refresh = serializers.CharField()
+    access = serializers.CharField()
+    user = serializers.DictField()
+
+
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = LoginSerializer
 
+    @extend_schema(
+        summary="Iniciar sesión",
+        description="Autenticación de usuario con email y contraseña. Retorna tokens JWT.",
+        request=LoginSerializer,
+        responses={200: LoginResponseSerializer},
+        tags=['Auth']
+    )
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
