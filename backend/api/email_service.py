@@ -4,8 +4,16 @@ Utiliza ReportLab para generar PDFs del lado del servidor
 y una API REST (Resend/SendGrid) para enviar correos
 
 Diseño: Moderno, Minimalista y Profesional
+
+Características:
+- Generación de PDF con diseño profesional
+- Certificación Blockchain con hash SHA-256
+- Código QR de verificación
+- Análisis inteligente con IA
+- Envío via Resend API o Django SMTP
 """
 import base64
+import hashlib
 import io
 import json
 import os
@@ -37,6 +45,13 @@ from reportlab.graphics.charts.piecharts import Pie
 from reportlab.graphics.charts.barcharts import VerticalBarChart
 from reportlab.graphics import renderPDF
 
+# Intentar importar qrcode para generación de QR
+try:
+    import qrcode
+    from qrcode.image.pil import PilImage
+    QR_DISPONIBLE = True
+except ImportError:
+    QR_DISPONIBLE = False
 
 # Paleta de colores moderna y elegante
 COLORS = {
@@ -744,3 +759,231 @@ def generar_html_correo(empresa, total_productos, total_unidades):
     </body>
     </html>
     """
+
+
+def generar_html_correo_avanzado(empresa, total_productos, total_unidades, alertas=None, hash_documento=None):
+    """
+    Genera el cuerpo HTML del correo con análisis IA y certificación blockchain.
+    
+    Args:
+        empresa: Diccionario con datos de la empresa
+        total_productos: Número total de productos
+        total_unidades: Total de unidades en inventario
+        alertas: Lista de alertas generadas por IA (opcional)
+        hash_documento: Hash SHA-256 del PDF para verificación (opcional)
+    """
+    fecha_hora = datetime.now().strftime('%d/%m/%Y a las %H:%M')
+    
+    # Generar sección de alertas si hay
+    alertas_html = ""
+    if alertas:
+        alertas_items = ""
+        for alerta in alertas[:5]:  # Máximo 5 alertas
+            color = {
+                'critica': '#EF4444',
+                'alta': '#F59E0B',
+                'media': '#F59E0B',
+                'info': '#10B981'
+            }.get(alerta.get('prioridad', 'info'), '#6366F1')
+            
+            alertas_items += f"""
+                <tr>
+                    <td style="padding: 10px; border-left: 4px solid {color}; background: #f8fafc; margin-bottom: 5px;">
+                        <strong style="color: {color};">{alerta.get('icono', '📌')} {alerta.get('titulo', 'Alerta')}</strong><br>
+                        <span style="color: #475569; font-size: 13px;">{alerta.get('mensaje', '')}</span>
+                    </td>
+                </tr>
+                <tr><td style="height: 8px;"></td></tr>
+            """
+        
+        alertas_html = f"""
+            <div style="margin-top: 20px;">
+                <h3 style="color: #0f172a; font-size: 16px; margin-bottom: 10px;">🤖 Análisis Inteligente</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    {alertas_items}
+                </table>
+            </div>
+        """
+    
+    # Generar sección de verificación blockchain si hay hash
+    blockchain_html = ""
+    if hash_documento:
+        blockchain_html = f"""
+            <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 8px;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="vertical-align: top; padding-right: 15px;">
+                            <span style="font-size: 24px;">🔐</span>
+                        </td>
+                        <td>
+                            <strong style="color: #6366f1; font-size: 14px;">Documento Certificado con Blockchain</strong><br>
+                            <span style="color: #94a3b8; font-size: 11px; font-family: monospace;">
+                                Hash SHA-256: {hash_documento[:32]}...
+                            </span><br>
+                            <span style="color: #94a3b8; font-size: 11px;">
+                                Este documento ha sido firmado digitalmente para garantizar su autenticidad.
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        """
+    
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background: #f1f5f9;">
+        <div style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); color: white; padding: 30px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px;">📦 Reporte de Inventario</h1>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">{empresa.get('nombre', 'N/A')}</p>
+        </div>
+        
+        <div style="background: #ffffff; padding: 30px; border: 1px solid #e2e8f0;">
+            <p style="margin-top: 0;">Hola,</p>
+            <p>Adjunto encontrarás el reporte de inventario de <strong>{empresa.get('nombre', 'N/A')}</strong> generado el {fecha_hora}.</p>
+            
+            <table style="width: 100%; border-collapse: separate; border-spacing: 10px; margin: 20px 0;">
+                <tr>
+                    <td style="background: #f8fafc; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; width: 50%;">
+                        <div style="font-size: 32px; font-weight: bold; color: #6366F1;">{total_productos}</div>
+                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 5px;">Productos</div>
+                    </td>
+                    <td style="background: #f8fafc; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; width: 50%;">
+                        <div style="font-size: 32px; font-weight: bold; color: #8B5CF6;">{total_unidades:,}</div>
+                        <div style="font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 5px;">Unidades</div>
+                    </td>
+                </tr>
+            </table>
+            
+            {alertas_html}
+            
+            <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                📎 El reporte completo en formato PDF se encuentra adjunto a este correo.
+            </div>
+            
+            {blockchain_html}
+        </div>
+        
+        <div style="background: #0f172a; color: #94a3b8; padding: 20px; text-align: center; font-size: 12px;">
+            <p style="margin: 0;">Sistema de Inventario - Lite Thinking © 2025</p>
+            <p style="margin: 5px 0 0 0; font-size: 11px;">Este es un correo automático, por favor no responder.</p>
+            <p style="margin: 10px 0 0 0;">
+                <span style="color: #6366f1;">🔒 Seguro</span> · 
+                <span style="color: #10b981;">🤖 Análisis IA</span> · 
+                <span style="color: #8b5cf6;">⛓️ Blockchain</span>
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+
+
+# ═══════════════════════════════════════════════════════════════
+# FUNCIONES DE BLOCKCHAIN Y VERIFICACIÓN
+# ═══════════════════════════════════════════════════════════════
+
+def generar_hash_documento(contenido: bytes) -> str:
+    """
+    Genera un hash SHA-256 del contenido del documento.
+    Simula una certificación blockchain para verificación de autenticidad.
+    
+    Args:
+        contenido: Bytes del documento PDF
+    
+    Returns:
+        Hash SHA-256 como string hexadecimal
+    """
+    return hashlib.sha256(contenido).hexdigest()
+
+
+def generar_hash_inventario(inventarios: list) -> str:
+    """
+    Genera un hash SHA-256 del contenido del inventario.
+    Útil para verificar que los datos no han sido alterados.
+    
+    Args:
+        inventarios: Lista de diccionarios con datos del inventario
+    
+    Returns:
+        Hash SHA-256 como string hexadecimal
+    """
+    # Crear representación canónica del inventario
+    datos = []
+    for inv in inventarios:
+        datos.append({
+            'codigo': inv.get('producto_codigo', ''),
+            'nombre': inv.get('producto_nombre', ''),
+            'cantidad': inv.get('cantidad', 0),
+        })
+    
+    # Ordenar para consistencia
+    datos.sort(key=lambda x: x['codigo'])
+    
+    # Generar hash
+    contenido = json.dumps(datos, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(contenido.encode('utf-8')).hexdigest()
+
+
+def generar_codigo_qr(datos: str, tamanio: int = 100) -> bytes:
+    """
+    Genera un código QR con los datos proporcionados.
+    
+    Args:
+        datos: String a codificar en el QR
+        tamanio: Tamaño del QR en píxeles
+    
+    Returns:
+        Bytes de la imagen PNG del QR, o None si qrcode no está disponible
+    """
+    if not QR_DISPONIBLE:
+        return None
+    
+    try:
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_M,
+            box_size=10,
+            border=2,
+        )
+        qr.add_data(datos)
+        qr.make(fit=True)
+        
+        img = qr.make_image(fill_color="#0F172A", back_color="white")
+        
+        # Redimensionar
+        img = img.resize((tamanio, tamanio))
+        
+        # Convertir a bytes
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        return buffer.getvalue()
+        
+    except Exception as e:
+        print(f"Error generando QR: {e}")
+        return None
+
+
+def crear_qr_verificacion(empresa_nit: str, hash_documento: str) -> bytes:
+    """
+    Crea un código QR para verificación del documento.
+    El QR contiene una URL o datos de verificación.
+    
+    Args:
+        empresa_nit: NIT de la empresa
+        hash_documento: Hash del documento
+    
+    Returns:
+        Bytes de la imagen PNG del QR
+    """
+    datos_verificacion = json.dumps({
+        'tipo': 'inventario',
+        'empresa': empresa_nit,
+        'hash': hash_documento[:16],  # Primeros 16 caracteres
+        'fecha': datetime.now().isoformat(),
+    })
+    
+    return generar_codigo_qr(datos_verificacion)

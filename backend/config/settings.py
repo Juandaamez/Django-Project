@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from datetime import timedelta
 from pathlib import Path
+import os
+
+# Cargar variables de entorno desde .env
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -171,3 +176,38 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
+# ═══════════════════════════════════════════════════════════════
+# CONFIGURACIÓN DE EMAIL - RESEND API
+# ═══════════════════════════════════════════════════════════════
+# Para habilitar el envío de correos, necesitas:
+# 1. Crear cuenta gratuita en https://resend.com
+# 2. Obtener tu API Key desde el dashboard
+# 3. Configurar la variable de entorno RESEND_API_KEY
+#
+# Opción A: Variable de entorno (recomendado para producción)
+#   export RESEND_API_KEY='re_xxxxxxxxxxxxx'
+#
+# Opción B: Configurar directamente aquí (solo desarrollo)
+#   RESEND_API_KEY = 're_xxxxxxxxxxxxx'
+
+import os
+
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+
+# Email por defecto para envíos
+# Si usas dominio verificado en Resend, cambia 'onboarding@resend.dev'
+EMAIL_FROM = os.environ.get('EMAIL_FROM', 'Inventario Lite Thinking <onboarding@resend.dev>')
+
+# ═══════════════════════════════════════════════════════════════
+# CONFIGURACIÓN ALTERNATIVA - DJANGO SMTP (Gmail, Outlook, etc.)
+# ═══════════════════════════════════════════════════════════════
+# Si prefieres usar SMTP tradicional en lugar de Resend:
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@litethinking.com')

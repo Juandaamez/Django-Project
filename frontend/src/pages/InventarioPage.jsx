@@ -102,6 +102,11 @@ const InventarioPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isPDFGenerating, setIsPDFGenerating] = useState(false)
   const [isSendingEmail, setIsSendingEmail] = useState(false)
+  
+  // Estados para opciones avanzadas de email
+  const [incluirAnalisisIA, setIncluirAnalisisIA] = useState(true)
+  const [incluirBlockchain, setIncluirBlockchain] = useState(true)
+  const [emailResponse, setEmailResponse] = useState(null)
 
   // Cargar empresas
   const loadEmpresas = useCallback(async () => {
@@ -268,6 +273,9 @@ const InventarioPage = () => {
   const handleOpenEmailModal = (empresa) => {
     setSelectedEmpresa(empresa)
     setEmailDestino('')
+    setEmailResponse(null)
+    setIncluirAnalisisIA(true)
+    setIncluirBlockchain(true)
     setIsEmailModalOpen(true)
   }
 
@@ -280,6 +288,7 @@ const InventarioPage = () => {
     try {
       setIsSendingEmail(true)
       setError(null)
+      setEmailResponse(null)
       
       // Obtener inventarios de la empresa si no los tenemos
       let inventarios = empresaInventarios[selectedEmpresa.nit]
@@ -291,15 +300,18 @@ const InventarioPage = () => {
       // Generar PDF en Base64 para enviar al servidor
       const pdfBase64 = obtenerPDFBase64(selectedEmpresa, inventarios)
       
-      // Enviar correo via API REST del servidor
+      // Enviar correo via API REST del servidor con opciones avanzadas
       const resultado = await inventarioService.enviarPorCorreo(
         selectedEmpresa.nit,
         emailDestino,
-        pdfBase64
+        pdfBase64,
+        incluirAnalisisIA,
+        incluirBlockchain
       )
       
       if (resultado.success) {
-        setSuccessMessage(`📧 Correo enviado exitosamente a ${emailDestino}`)
+        setEmailResponse(resultado)
+        setSuccessMessage(`📧 Correo enviado exitosamente a ${emailDestino}${resultado.hash_documento ? ' (Certificado Blockchain)' : ''}${resultado.alertas_count > 0 ? ` - ${resultado.alertas_count} alertas IA` : ''}`)
         setIsEmailModalOpen(false)
         setEmailDestino('')
       } else {
@@ -617,12 +629,14 @@ const InventarioPage = () => {
         isOpen={isEmailModalOpen}
         onClose={() => !isSendingEmail && setIsEmailModalOpen(false)}
         title={`📧 Enviar Inventario - ${selectedEmpresa?.nombre || ''}`}
-        size="sm"
+        size="md"
       >
-        <div className="space-y-4">
+        <div className="space-y-5">
           <p className="text-white/70">
             El inventario de <strong className="text-white">{selectedEmpresa?.nombre}</strong> se generará en PDF y se enviará al correo indicado.
           </p>
+          
+          {/* Correo de destino */}
           <div>
             <label className="block text-sm font-medium text-white/80 mb-2">
               Correo de destino
@@ -637,14 +651,69 @@ const InventarioPage = () => {
             />
           </div>
           
-          {/* Nota informativa */}
-          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-            <p className="text-xs text-amber-200/80">
-              💡 <strong>Nota:</strong> Para el envío de correos es necesario configurar la API key de Resend o las credenciales SMTP en el servidor.
-            </p>
+          {/* Opciones avanzadas */}
+          <div className="p-4 rounded-xl bg-slate-800/50 border border-white/10">
+            <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+              <span>⚙️</span> Opciones Avanzadas
+            </h4>
+            <div className="space-y-3">
+              {/* Análisis IA */}
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={incluirAnalisisIA}
+                    onChange={(e) => setIncluirAnalisisIA(e.target.checked)}
+                    disabled={isSendingEmail}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-white/10 rounded-full peer-checked:bg-emerald-500/50 transition-colors"></div>
+                  <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-white/40 rounded-full peer-checked:translate-x-5 peer-checked:bg-emerald-400 transition-all"></div>
+                </div>
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-white/90 group-hover:text-white">🤖 Análisis Inteligente (IA)</span>
+                  <p className="text-xs text-white/50">Incluir alertas y recomendaciones automáticas</p>
+                </div>
+              </label>
+              
+              {/* Certificación Blockchain */}
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={incluirBlockchain}
+                    onChange={(e) => setIncluirBlockchain(e.target.checked)}
+                    disabled={isSendingEmail}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-white/10 rounded-full peer-checked:bg-indigo-500/50 transition-colors"></div>
+                  <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-white/40 rounded-full peer-checked:translate-x-5 peer-checked:bg-indigo-400 transition-all"></div>
+                </div>
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-white/90 group-hover:text-white">⛓️ Certificación Blockchain</span>
+                  <p className="text-xs text-white/50">Hash SHA-256 para verificación de autenticidad</p>
+                </div>
+              </label>
+            </div>
           </div>
           
-          <div className="flex gap-3 pt-4">
+          {/* Preview de características */}
+          {(incluirAnalisisIA || incluirBlockchain) && (
+            <div className="flex flex-wrap gap-2">
+              {incluirAnalisisIA && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400">
+                  🤖 IA Activa
+                </span>
+              )}
+              {incluirBlockchain && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-xs text-indigo-400">
+                  ⛓️ Blockchain
+                </span>
+              )}
+            </div>
+          )}
+          
+          <div className="flex gap-3 pt-2">
             <Button 
               variant="ghost" 
               onClick={() => setIsEmailModalOpen(false)} 
@@ -666,7 +735,7 @@ const InventarioPage = () => {
               ) : (
                 <>
                   <MailIcon />
-                  Enviar
+                  Enviar Reporte
                 </>
               )}
             </Button>

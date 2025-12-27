@@ -97,6 +97,11 @@ const inventarioService = {
    * @param {string} searchTerm - Término de búsqueda
    * @returns {Promise<Array>} Lista de inventarios filtrados
    */
+  /**
+   * Buscar inventarios por término
+   * @param {string} searchTerm - Término de búsqueda
+   * @returns {Promise<Array>} Lista de inventarios filtrados
+   */
   async search(searchTerm) {
     const response = await api.get(`${ENDPOINT}/`, {
       params: { search: searchTerm }
@@ -118,17 +123,44 @@ const inventarioService = {
 
   /**
    * Enviar PDF del inventario por correo usando la API REST del servidor
+   * Incluye opciones avanzadas de IA y Blockchain
+   * 
    * @param {string} empresaNit - NIT de la empresa
    * @param {string} emailDestino - Correo de destino
    * @param {string} pdfBase64 - PDF en Base64 (opcional, generado en frontend)
-   * @returns {Promise<Object>} Resultado del envío
+   * @param {boolean} incluirAnalisisIA - Incluir análisis inteligente (default: true)
+   * @param {boolean} incluirBlockchain - Incluir certificación blockchain (default: true)
+   * @returns {Promise<Object>} Resultado del envío con hash y alertas
    */
-  async enviarPorCorreo(empresaNit, emailDestino, pdfBase64 = null) {
+  async enviarPorCorreo(empresaNit, emailDestino, pdfBase64 = null, incluirAnalisisIA = true, incluirBlockchain = true) {
     const response = await api.post(`${ENDPOINT}/enviar-correo/`, {
       empresa_nit: empresaNit,
       email_destino: emailDestino,
-      pdf_base64: pdfBase64
+      pdf_base64: pdfBase64,
+      incluir_analisis_ia: incluirAnalisisIA,
+      incluir_blockchain: incluirBlockchain
     })
+    return response.data
+  },
+
+  /**
+   * Obtener análisis IA del inventario de una empresa
+   * @param {string} empresaNit - NIT de la empresa
+   * @returns {Promise<Object>} Análisis completo con alertas y recomendaciones
+   */
+  async obtenerAnalisis(empresaNit) {
+    const response = await api.get(`${ENDPOINT}/analisis/${empresaNit}/`)
+    return response.data
+  },
+
+  /**
+   * Obtener historial de envíos de una empresa
+   * @param {string} empresaNit - NIT de la empresa (opcional)
+   * @returns {Promise<Array>} Lista de envíos realizados
+   */
+  async obtenerHistorialEnvios(empresaNit = null) {
+    const params = empresaNit ? { empresa: empresaNit } : {}
+    const response = await api.get('/historial-envios/', { params })
     return response.data
   }
 }
