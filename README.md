@@ -34,21 +34,36 @@ CONTRASEÑA: 12345678
 
 ## 🏗️ Arquitectura
 
+El proyecto implementa **Clean Architecture** con separación clara de capas:
+
 ```
 Django-Project/
-├── backend/                 # API REST con Django + DRF
-│   ├── api/                 # Endpoints, servicios y lógica
+├── domain/                  # 🎯 CAPA DE DOMINIO (Poetry Package)
+│   ├── src/litethinking_domain/
+│   │   ├── entities/        # Entidades del negocio (puras, sin ORM)
+│   │   ├── value_objects/   # Objetos de valor inmutables
+│   │   ├── interfaces/      # Contratos (Ports) para repositorios
+│   │   ├── validators/      # Reglas de negocio
+│   │   └── exceptions/      # Excepciones de dominio
+│   ├── tests/               # Tests unitarios del dominio
+│   └── pyproject.toml       # Configuración Poetry
+│
+├── backend/                 # 🔧 CAPA DE INFRAESTRUCTURA (Django)
+│   ├── api/                 # Endpoints REST y servicios
 │   │   ├── views.py         # ViewSets y APIViews
 │   │   ├── serializers.py   # Serialización de datos
 │   │   ├── email_service.py # Generación PDF y envío email
-│   │   ├── ia_service.py    # Motor de análisis inteligente
+│   │   ├── ia_service.py    # Motor de análisis con Gemini AI
 │   │   └── urls.py          # Rutas de la API
-│   ├── core/                # Modelos de datos
-│   │   └── models/          # Empresa, Producto, Inventario, HistorialEnvio
+│   ├── core/                # Modelos Django y adaptadores
+│   │   ├── models/          # Modelos ORM (Empresa, Producto, etc.)
+│   │   └── adapters/        # Implementación de interfaces de dominio
+│   │       ├── repositories.py  # Repositorios Django
+│   │       └── mappers.py       # Traductores entidad <-> modelo
 │   ├── config/              # Configuración Django
 │   └── manage.py
 │
-├── frontend/                # SPA con React + Vite
+├── frontend/                # 🎨 CAPA DE PRESENTACIÓN (React)
 │   ├── src/
 │   │   ├── components/      # Atomic Design (atoms, molecules, organisms)
 │   │   ├── pages/           # Páginas de la aplicación
@@ -59,6 +74,29 @@ Django-Project/
 │
 └── README.md
 ```
+
+### 📦 Gestión del Paquete de Dominio con Poetry
+
+La capa de dominio es un **paquete Python independiente** gestionado con Poetry:
+
+```bash
+# Instalar Poetry (si no está instalado)
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Configurar el paquete de dominio
+cd domain
+poetry install
+
+# Instalar en el backend (modo desarrollo)
+cd ../backend
+pip install -e ../domain
+
+# Ejecutar tests del dominio
+cd domain
+poetry run pytest
+```
+
+Ver [domain/README.md](domain/README.md) para más detalles.
 
 ---
 
