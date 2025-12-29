@@ -1,4 +1,5 @@
 import hashlib
+import os
 from unittest.mock import patch, MagicMock
 
 from django.test import TestCase
@@ -43,8 +44,8 @@ class HashServiceTest(TestCase):
         self.assertEqual(len(hash_result), 64)
         self.assertTrue(all(c in '0123456789abcdef' for c in hash_result))
     
-    def test_generar_hash_inventario_orden_importa(self):
-        """Test: El orden de los datos afecta el hash"""
+    def test_generar_hash_inventario_orden_no_importa(self):
+        """Test: El orden de los datos NO afecta el hash (se ordena internamente)"""
         inventarios1 = [
             {'producto_codigo': 'PROD-001', 'cantidad': 100},
             {'producto_codigo': 'PROD-002', 'cantidad': 200},
@@ -55,8 +56,8 @@ class HashServiceTest(TestCase):
         ]
         hash1 = generar_hash_inventario(inventarios1)
         hash2 = generar_hash_inventario(inventarios2)
-        # El hash debería ser diferente por el orden
-        self.assertNotEqual(hash1, hash2)
+        # El hash debería ser IGUAL porque se ordenan internamente para consistencia
+        self.assertEqual(hash1, hash2)
 
 
 class HTMLCorreoServiceTest(TestCase):
@@ -163,34 +164,38 @@ class PDFServiceTest(TestCase):
 
 class EmailSendServiceTest(TestCase):
     
-    @patch('api.email_service.resend')
-    def test_enviar_correo_resend_sin_api_key(self, mock_resend):
+    @patch('api.email_service.requests.post')
+    def test_enviar_correo_resend_sin_api_key(self, mock_post):
         """Test: Enviar correo sin API key genera ValueError"""
         from .email_service import enviar_correo_resend
         
         # Simular que no hay API key
-        with patch('api.email_service.settings') as mock_settings:
-            mock_settings.RESEND_API_KEY = ''
-            
-            with self.assertRaises(ValueError):
-                enviar_correo_resend(
-                    destinatario='test@example.com',
-                    asunto='Test',
-                    cuerpo_html='<p>Test</p>',
-                    adjunto_pdf=b'%PDF',
-                    nombre_archivo='test.pdf'
-                )
+        with patch.dict(os.environ, {'RESEND_API_KEY': ''}, clear=False):
+            with patch('api.email_service.settings') as mock_settings:
+                mock_settings.RESEND_API_KEY = ''
+                delattr(mock_settings, 'RESEND_API_KEY')  # Simular que no existe
+                
+                with self.assertRaises(ValueError):
+                    enviar_correo_resend(
+                        destinatario='test@example.com',
+                        asunto='Test',
+                        cuerpo_html='<p>Test</p>',
+                        adjunto_pdf=b'%PDF',
+                        nombre_archivo='test.pdf'
+                    )
     
-    @patch('api.email_service.resend')
-    def test_enviar_correo_resend_exitoso(self, mock_resend):
+    @patch('api.email_service.requests.post')
+    def test_enviar_correo_resend_exitoso(self, mock_post):
+        """Test: Enviar correo exitoso usando Resend API"""
         from .email_service import enviar_correo_resend
         
-        mock_resend.Emails.send.return_value = {'id': 'test-email-id'}
+        # Mock de respuesta exitosa
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {'id': 'test-email-id'}
+        mock_post.return_value = mock_response
         
-        with patch('api.email_service.settings') as mock_settings:
-            mock_settings.RESEND_API_KEY = 're_test_key'
-            mock_settings.EMAIL_FROM = 'test@example.com'
-            
+        with patch.dict(os.environ, {'RESEND_API_KEY': 're_test_key'}, clear=False):
             result = enviar_correo_resend(
                 destinatario='dest@example.com',
                 asunto='Test Subject',
@@ -199,4 +204,5 @@ class EmailSendServiceTest(TestCase):
                 nombre_archivo='test.pdf'
             )
             
-            self.assertEqual(result, {'id': 'test-email-id'})
+            self.assertEqual(result['id'], 'test-email-id')
+            mock_post.assert_called_once()

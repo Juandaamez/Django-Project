@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
-from core.models import Empresa, Producto, Inventario, HistorialEnvio
+from litethinking_domain.models import Empresa, Producto, Inventario, HistorialEnvio
 from .serializers import (
     EmpresaSerializer,
     ProductoSerializer,

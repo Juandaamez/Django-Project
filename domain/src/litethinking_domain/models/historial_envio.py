@@ -1,10 +1,15 @@
 """
-Modelo para Historial de Envíos de Inventario
-Incluye certificación blockchain con hash SHA-256 para autenticidad
+Modelo HistorialEnvio
+=====================
+
+Representa el registro de envío de un reporte de inventario por correo.
+Incluye certificación blockchain con hash SHA-256.
 """
+import hashlib
+import json
 from django.db import models
 from django.contrib.auth.models import User
-from .empresa import Empresa
+from litethinking_domain.models.empresa import Empresa
 
 
 class HistorialEnvio(models.Model):
@@ -82,6 +87,7 @@ class HistorialEnvio(models.Model):
     fecha_envio = models.DateTimeField(null=True, blank=True)
     
     class Meta:
+        db_table = 'core_historialenvio'  # Usar tabla existente
         verbose_name = 'Historial de Envío'
         verbose_name_plural = 'Historial de Envíos'
         ordering = ['-fecha_creacion']
@@ -97,15 +103,11 @@ class HistorialEnvio(models.Model):
     @classmethod
     def generar_hash(cls, contenido: bytes) -> str:
         """Genera hash SHA-256 de bytes"""
-        import hashlib
         return hashlib.sha256(contenido).hexdigest()
     
     @classmethod
     def generar_hash_inventario(cls, inventarios: list) -> str:
         """Genera hash del contenido del inventario para blockchain"""
-        import hashlib
-        import json
-        
         # Crear representación canónica del inventario
         datos = []
         for inv in inventarios:
