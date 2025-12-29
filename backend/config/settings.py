@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'corsheaders',
+    'litethinking_domain',  # Capa de Dominio (modelos)
     'core',
     'api',
 ]
@@ -269,3 +270,25 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@litethinking.com')
+
+# ═══════════════════════════════════════════════════════════════
+# CONFIGURACIÓN DE SEGURIDAD PARA PRODUCCIÓN
+# ═══════════════════════════════════════════════════════════════
+# Estas configuraciones se activan automáticamente cuando DEBUG=False
+
+if not DEBUG:
+    # HTTPS/SSL
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # Cookies seguras
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # HSTS (HTTP Strict Transport Security)
+    SECURE_HSTS_SECONDS = 31536000  # 1 año
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # Prevención de contenido mixto
+    SECURE_CONTENT_TYPE_NOSNIFF = True

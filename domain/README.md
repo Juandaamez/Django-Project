@@ -2,14 +2,17 @@
 
 ## 📋 Descripción
 
-Este paquete contiene la **Capa de Dominio** del sistema de inventario Lite Thinking, implementado siguiendo los principios de **Clean Architecture** y **Domain-Driven Design (DDD)**.
+Este paquete contiene la **Capa de Dominio** del sistema de inventario Lite Thinking, implementado siguiendo los principios de **Clean Architecture**.
 
-La capa de dominio es completamente **independiente** de:
+La capa de dominio contiene **TODOS los modelos Django** del negocio y es la **única fuente de verdad** para las entidades del sistema.
 
-- Frameworks web (Django, FastAPI, etc.)
-- ORMs y bases de datos
-- APIs HTTP/REST
-- Interfaces de usuario
+## 🔑 Características
+
+- ✅ Modelos Django (ORM) para persistencia
+- ✅ Gestionado con Poetry
+- ✅ Instalable como paquete Python
+- ✅ Migraciones Django incluidas
+- ✅ Compatible con Django 5.0 - 6.x
 
 ## 🏗️ Arquitectura
 
@@ -17,22 +20,15 @@ La capa de dominio es completamente **independiente** de:
 domain/
 ├── src/
 │   └── litethinking_domain/
-│       ├── entities/          # Entidades del negocio
-│       │   ├── empresa.py
-│       │   ├── producto.py
-│       │   ├── inventario.py
-│       │   └── historial_envio.py
-│       ├── value_objects/     # Objetos de valor inmutables
-│       │   ├── nit.py
-│       │   ├── email.py
-│       │   ├── money.py
-│       │   └── hash_blockchain.py
-│       ├── interfaces/        # Contratos/Interfaces (Ports)
-│       │   ├── repositories/
-│       │   └── services/
-│       ├── exceptions/        # Excepciones de dominio
-│       └── validators/        # Validadores de reglas de negocio
-├── tests/
+│       ├── __init__.py        # Configuración de la app Django
+│       ├── apps.py            # AppConfig
+│       ├── models/            # Modelos Django ORM
+│       │   ├── __init__.py
+│       │   ├── empresa.py     # Modelo Empresa
+│       │   ├── producto.py    # Modelo Producto
+│       │   ├── inventario.py  # Modelo Inventario
+│       │   └── historial_envio.py  # Modelo HistorialEnvio
+│       └── migrations/        # Migraciones Django
 ├── pyproject.toml
 └── README.md
 ```
@@ -51,62 +47,72 @@ poetry install
 ```bash
 cd backend
 pip install -e ../domain
-# o con poetry
-poetry add ../domain
 ```
 
-### Publicar en PyPI (producción)
+## 🎯 Uso
 
-```bash
-poetry build
-poetry publish
-```
-
-## 🧪 Testing
-
-```bash
-cd domain
-poetry run pytest
-```
-
-## 📖 Uso
+### En settings.py
 
 ```python
-from litethinking_domain.entities import Empresa, Producto, Inventario
-from litethinking_domain.value_objects import NIT, Email, Money
-from litethinking_domain.validators import ValidadorEmpresa
-
-# Crear una entidad de dominio
-empresa = Empresa(
-    nit=NIT("900123456-7"),
-    nombre="Mi Empresa S.A.S",
-    direccion="Calle 123 #45-67",
-    telefono="+57 300 1234567"
-)
-
-# Validar reglas de negocio
-validador = ValidadorEmpresa()
-errores = validador.validar(empresa)
-if errores:
-    raise ValueError(f"Empresa inválida: {errores}")
-
-# Crear productos con precios en múltiples monedas
-producto = Producto(
-    codigo="PROD-001",
-    nombre="Laptop",
-    caracteristicas="Intel i7, 16GB RAM, 512GB SSD",
-    precios={
-        "COP": Money(3500000, "COP"),
-        "USD": Money(900, "USD"),
-    },
-    empresa_nit=empresa.nit
-)
+INSTALLED_APPS = [
+    # ... otras apps
+    'litethinking_domain',  # Capa de Dominio (modelos)
+    # ... apps que usan los modelos
+]
 ```
 
-## 🔒 Principios Aplicados
+### Importar Modelos
 
-- **Single Responsibility**: Cada entidad tiene una única responsabilidad
-- **Open/Closed**: Extensible sin modificar código existente
-- **Liskov Substitution**: Interfaces bien definidas
-- **Interface Segregation**: Interfaces pequeñas y específicas
-- **Dependency Inversion**: Dependencias hacia abstracciones
+```python
+from litethinking_domain.models import Empresa, Producto, Inventario, HistorialEnvio
+
+# Uso normal de Django ORM
+empresa = Empresa.objects.create(
+    nit="123456789",
+    nombre="Mi Empresa",
+    direccion="Calle 123",
+    telefono="555-1234"
+)
+
+productos = Producto.objects.filter(empresa=empresa)
+```
+
+## 📊 Modelos
+
+### Empresa
+- **nit** (PK): Número de Identificación Tributaria
+- **nombre**: Nombre de la empresa
+- **direccion**: Dirección física
+- **telefono**: Teléfono de contacto
+
+### Producto
+- **codigo** (unique): Código del producto
+- **nombre**: Nombre del producto
+- **caracteristicas**: Descripción
+- **precios**: JSONField con precios por moneda
+- **empresa** (FK): Empresa propietaria
+
+### Inventario
+- **producto** (FK): Producto asociado
+- **cantidad**: Stock disponible
+- **fecha_actualizacion**: Auto-actualizado
+
+### HistorialEnvio
+- Registro de envíos de reportes por correo
+- Certificación blockchain con hash SHA-256
+- Integración con análisis de IA
+
+## 🔧 Migraciones
+
+```bash
+# Crear migraciones
+python manage.py makemigrations litethinking_domain
+
+# Aplicar migraciones
+python manage.py migrate litethinking_domain
+```
+
+## 📄 Licencia
+
+MIT License
+

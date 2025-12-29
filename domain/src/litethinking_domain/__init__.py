@@ -1,41 +1,14 @@
 """
-Lite Thinking Domain Layer
-==========================
+Litethinking Domain - Capa de Dominio
+=====================================
 
-Capa de dominio independiente que contiene las entidades del negocio,
-objetos de valor, interfaces y reglas de negocio para el sistema de inventario.
+Este paquete contiene TODOS los modelos del negocio (Django ORM).
+Es la ÚNICA fuente de verdad para las entidades del sistema.
 
-Esta capa sigue los principios de Clean Architecture y está completamente
-desacoplada de frameworks, ORMs y detalles de infraestructura.
+La capa de dominio usa Django como ORM y es gestionada con Poetry.
 """
 
-from litethinking_domain.entities import (
-    Empresa,
-    Producto,
-    Inventario,
-    HistorialEnvio,
-)
-from litethinking_domain.value_objects import (
-    NIT,
-    Email,
-    Money,
-    HashBlockchain,
-    CodigoProducto,
-)
+default_app_config = 'litethinking_domain.apps.LitethinkingDomainConfig'
 
 __version__ = "1.0.0"
 __author__ = "Lite Thinking Team"
-
-__all__ = [
-    # Entidades
-    "Empresa",
-    "Producto",
-    "Inventario",
-    "HistorialEnvio",
-    # Objetos de Valor
-    "NIT",
-    "Email",
-    "Money",
-    "HashBlockchain",
-    "CodigoProducto",
-]

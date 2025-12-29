@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.models import Empresa, Producto, Inventario, HistorialEnvio
+from litethinking_domain.models import Empresa, Producto, Inventario, HistorialEnvio
 
 
 class EmpresaSerializer(serializers.ModelSerializer):

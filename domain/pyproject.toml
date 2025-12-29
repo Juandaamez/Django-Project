@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "litethinking-domain"
 version = "1.0.0"
-description = "Capa de Dominio - Entidades y reglas de negocio para el sistema de inventario Lite Thinking"
+description = "Capa de Dominio - Modelos y reglas de negocio para el sistema de inventario Lite Thinking"
 authors = ["Lite Thinking Team <dev@litethinking.com>"]
 readme = "README.md"
 license = "MIT"
@@ -16,11 +16,11 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-keywords = ["domain", "clean-architecture", "ddd", "entities", "business-logic"]
+keywords = ["domain", "clean-architecture", "ddd", "entities", "django", "models"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pydantic = "^2.5.0"
+Django = ">=5.0,<7.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

@@ -28,7 +28,7 @@ class EmpresaModelTest(TestCase):
         empresa = Empresa.objects.create(**self.empresa_data)
         self.assertEqual(empresa.nit, '900123456-1')
         self.assertEqual(empresa.nombre, 'Empresa Test S.A.S')
-        self.assertEqual(str(empresa), 'Empresa Test S.A.S')
+        self.assertEqual(str(empresa), 'Empresa Test S.A.S (NIT: 900123456-1)')
     
     def test_empresa_nit_es_primary_key(self):
         """Test: El NIT es la clave primaria"""
@@ -44,7 +44,7 @@ class EmpresaModelTest(TestCase):
     def test_empresa_str(self):
         """Test: Representación string de la empresa"""
         empresa = Empresa.objects.create(**self.empresa_data)
-        self.assertEqual(str(empresa), empresa.nombre)
+        self.assertEqual(str(empresa), f"{empresa.nombre} (NIT: {empresa.nit})")
 
 
 class ProductoModelTest(TestCase):
@@ -94,7 +94,7 @@ class ProductoModelTest(TestCase):
     def test_producto_str(self):
         """Test: Representación string del producto"""
         producto = Producto.objects.create(**self.producto_data)
-        self.assertEqual(str(producto), producto.nombre)
+        self.assertEqual(str(producto), f"{producto.nombre} ({producto.codigo})")
     
     def test_producto_cascade_delete(self):
         """Test: Eliminar empresa elimina sus productos"""
@@ -151,7 +151,7 @@ class InventarioModelTest(TestCase):
             producto=self.producto,
             cantidad=100
         )
-        expected = f"{self.producto.nombre} - 100"
+        expected = f"{self.producto.nombre} - 100 unidades"
         self.assertEqual(str(inventario), expected)
     
     def test_inventario_cascade_delete(self):

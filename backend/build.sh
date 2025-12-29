@@ -3,15 +3,23 @@
 set -o errexit
 
 # Instalar dependencias del proyecto
+pip install --upgrade pip
 pip install -r requirements.txt
 
-# Instalar el paquete de dominio desde el directorio local
-# En producción, esto podría ser desde PyPI: pip install litethinking-domain
-if [ -d "../domain" ]; then
-    echo "Instalando paquete de dominio local..."
-    pip install -e ../domain
+# Instalar el paquete de dominio
+# El directorio domain está en el mismo repo, un nivel arriba
+DOMAIN_PATH="../domain"
+if [ -d "$DOMAIN_PATH" ]; then
+    echo "=== Instalando paquete de dominio desde: $DOMAIN_PATH ==="
+    pip install "$DOMAIN_PATH"
+    echo "=== Paquete de dominio instalado exitosamente ==="
 else
-    echo "Advertencia: Directorio domain no encontrado. Usando solo dependencias base."
+    echo "ERROR: No se encontró el directorio domain en: $DOMAIN_PATH"
+    echo "La estructura debe ser:"
+    echo "  repo/"
+    echo "    ├── backend/"
+    echo "    └── domain/"
+    exit 1
 fi
 
 python manage.py collectstatic --no-input
