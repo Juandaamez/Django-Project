@@ -23,6 +23,11 @@ else
 fi
 
 python manage.py collectstatic --no-input
+
+# Primero marcar como fake la migración inicial de litethinking_domain
+# porque las tablas core_* ya existen en producción
+echo "=== Aplicando migraciones ==="
+python manage.py migrate litethinking_domain --fake-initial
 python manage.py migrate
 
 # Crear superusuario si no existe
