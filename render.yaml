@@ -30,3 +30,7 @@ services:
         value: "3.11.4"
       - key: FRONTEND_URL
         sync: false  # Se configura manualmente después del deploy del frontend
+      - key: DEMO_MODE
+        value: "true"
+      - key: SEED_DEMO_DATA
+        value: "true"

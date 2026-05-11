@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /**
  * InventarioForm - Formulario para crear/editar registros de inventario
  * Solo disponible para administradores

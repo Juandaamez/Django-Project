@@ -320,7 +320,9 @@ const drawTablaInventario = (doc, inventarios, startY, empresa, pageWidth, pageH
           ? JSON.parse(inv.producto_precios) 
           : inv.producto_precios
         precio = precios.COP || precios.USD || 0
-      } catch {}
+      } catch {
+        // Keep PDF generation resilient when legacy price data is malformed.
+      }
     } else if (inv.producto_precio) {
       precio = inv.producto_precio
     }

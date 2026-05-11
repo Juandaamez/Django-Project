@@ -1,5 +1,6 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from .authentication import LoginView
 from .views import (
@@ -20,6 +21,7 @@ router.register('historial-envios', HistorialEnviosViewSet, basename='historial-
 
 urlpatterns = [
 	path('auth/login/', LoginView.as_view(), name='auth-login'),
+	path('auth/token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
 	# Endpoints para PDF y correo
 	path('inventarios/pdf/<str:empresa_nit>/', GenerarPDFView.as_view(), name='inventario-pdf'),
 	path('inventarios/enviar-correo/', EnviarCorreoInventarioView.as_view(), name='inventario-enviar-correo'),

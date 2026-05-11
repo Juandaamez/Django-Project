@@ -32,6 +32,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-_#+#2qx&!z&h#mh5yfc$+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
+# Demo mode keeps portfolio deployments usable without external email keys.
+DEMO_MODE = os.environ.get('DEMO_MODE', 'False').lower() == 'true'
+
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Render.com host

@@ -10,6 +10,10 @@ node_modules/
 # Build outputs
 frontend/dist/
 backend/staticfiles/
+backend/runserver.log
+backend/runserver.err
+frontend/vite.log
+frontend/vite.err
 
 # Python
 __pycache__/

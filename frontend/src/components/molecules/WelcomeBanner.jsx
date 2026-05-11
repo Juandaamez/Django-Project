@@ -1,14 +1,21 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /**
  * WelcomeBanner - Molécula para mostrar un banner de bienvenida animado
  * Se muestra solo cuando el usuario inicia sesión por primera vez
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
 
 function WelcomeBanner() {
   const { user, isAuthenticated } = useAuth()
   const [isVisible, setIsVisible] = useState(false)
   const [shouldRender, setShouldRender] = useState(false)
+
+  const handleClose = useCallback(() => {
+    setIsVisible(false)
+    sessionStorage.setItem('welcomeBannerShown', 'true')
+    setTimeout(() => setShouldRender(false), 300)
+  }, [])
 
   useEffect(() => {
     // Mostrar banner solo si está autenticado y no se ha mostrado antes en esta sesión
@@ -26,17 +33,11 @@ function WelcomeBanner() {
 
       return () => clearTimeout(timer)
     }
-  }, [isAuthenticated])
-
-  const handleClose = () => {
-    setIsVisible(false)
-    sessionStorage.setItem('welcomeBannerShown', 'true')
-    setTimeout(() => setShouldRender(false), 300)
-  }
+  }, [isAuthenticated, handleClose])
 
   if (!shouldRender || !user) return null
 
-  const displayName = user.first_name || user.username || 'Usuario'
+  const displayName = user.full_name || user.email || 'Usuario'
   const isAdmin = user.is_staff || user.role === 'admin'
 
   return (

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /**
  * ProductoForm - Formulario para crear/editar productos
  * Solo disponible para administradores

@@ -26,15 +26,15 @@ const ParticleField = ({
           x: Math.random() * width,
           y: Math.random() * height,
           size: minSize + Math.random() * (maxSize - minSize),
-          speedX: (Math.random() - 0.5) * maxSpeed,
-          speedY: (Math.random() - 0.5) * maxSpeed,
+          speedX: (Math.random() < 0.5 ? -1 : 1) * (minSpeed + Math.random() * (maxSpeed - minSpeed)),
+          speedY: (Math.random() < 0.5 ? -1 : 1) * (minSpeed + Math.random() * (maxSpeed - minSpeed)),
           color: colors[Math.floor(Math.random() * colors.length)],
           opacity: 0.1 + Math.random() * 0.4,
         })
       }
       return particles
     }
-  }, [particleCount, colors, minSize, maxSize, maxSpeed])
+  }, [particleCount, colors, minSize, maxSize, minSpeed, maxSpeed])
 
   useEffect(() => {
     const canvas = canvasRef.current

@@ -31,7 +31,7 @@ const useForm = (initialValues = {}, validationRules = {}) => {
     const newErrors = {}
     let isValid = true
 
-    for (const [name, rules] of Object.entries(validationRules)) {
+    for (const name of Object.keys(validationRules)) {
       const error = validateField(name, values[name])
       if (error) {
         newErrors[name] = error

@@ -102,7 +102,6 @@ const InventarioPage = () => {
   // Estados para opciones avanzadas de email
   const [incluirAnalisisIA, setIncluirAnalisisIA] = useState(true)
   const [incluirBlockchain, setIncluirBlockchain] = useState(true)
-  const [emailResponse, setEmailResponse] = useState(null)
 
   // Cargar empresas
   const loadEmpresas = useCallback(async () => {
@@ -269,7 +268,6 @@ const InventarioPage = () => {
   const handleOpenEmailModal = (empresa) => {
     setSelectedEmpresa(empresa)
     setEmailDestino('')
-    setEmailResponse(null)
     setIncluirAnalisisIA(true)
     setIncluirBlockchain(true)
     setIsEmailModalOpen(true)
@@ -284,7 +282,6 @@ const InventarioPage = () => {
     try {
       setIsSendingEmail(true)
       setError(null)
-      setEmailResponse(null)
       
       // Obtener inventarios de la empresa si no los tenemos
       let inventarios = empresaInventarios[selectedEmpresa.nit]
@@ -306,7 +303,6 @@ const InventarioPage = () => {
       )
       
       if (resultado.success) {
-        setEmailResponse(resultado)
         setSuccessMessage(`📧 Correo enviado exitosamente a ${emailDestino}${resultado.hash_documento ? ' (Certificado Blockchain)' : ''}${resultado.alertas_count > 0 ? ` - ${resultado.alertas_count} alertas IA` : ''}`)
         setIsEmailModalOpen(false)
         setEmailDestino('')

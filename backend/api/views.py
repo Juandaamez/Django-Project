@@ -2,6 +2,7 @@ import base64
 import json
 from datetime import datetime
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework import filters, permissions, viewsets, status
@@ -264,6 +265,26 @@ class EnviarCorreoInventarioView(APIView):
 				resumen_ia=resumen_ia,
 				alertas_ia=alertas,
 			)
+
+			if getattr(settings, 'DEMO_MODE', False) and not getattr(settings, 'RESEND_API_KEY', ''):
+				historial.estado = 'enviado'
+				historial.proveedor = 'manual'
+				historial.respuesta_api = {
+					'mode': 'demo',
+					'message': 'Email delivery simulated because DEMO_MODE is enabled.',
+				}
+				historial.fecha_envio = timezone.now()
+				historial.save()
+
+				return Response({
+					'success': True,
+					'message': f'Correo simulado en modo demo para {email_destino}',
+					'provider': 'demo',
+					'historial_id': historial.id,
+					'hash_documento': hash_documento,
+					'alertas_count': len(alertas),
+					'details': historial.respuesta_api,
+				})
 			
 			try:
 				resultado = enviar_correo_resend(

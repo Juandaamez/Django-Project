@@ -30,17 +30,24 @@ echo "=== Aplicando migraciones ==="
 python manage.py migrate litethinking_domain --fake-initial
 python manage.py migrate
 
-# Crear superusuario si no existe
+# Crear superusuario solo si se entregan credenciales por entorno
 python manage.py shell << EOF
+import os
 from django.contrib.auth import get_user_model
 User = get_user_model()
-if not User.objects.filter(email='admins@gmail.com').exists():
-    User.objects.create_superuser(
-        username='admin',
-        email='admins@gmail.com',
-        password='12345678'
-    )
-    print('Superuser created!')
-else:
+email = os.environ.get('DJANGO_SUPERUSER_EMAIL')
+password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
+username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
+if email and password and not User.objects.filter(email=email).exists():
+    User.objects.create_superuser(username=username, email=email, password=password)
+    print('Superuser created from environment variables.')
+elif email:
     print('Superuser already exists.')
+else:
+    print('Superuser creation skipped. Set DJANGO_SUPERUSER_EMAIL and DJANGO_SUPERUSER_PASSWORD if needed.')
 EOF
+
+if [ "$SEED_DEMO_DATA" = "true" ]; then
+    echo "=== Seeding portfolio demo data ==="
+    python manage.py seed_demo
+fi

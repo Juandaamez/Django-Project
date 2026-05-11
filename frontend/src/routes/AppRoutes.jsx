@@ -7,50 +7,52 @@ import InventarioPage from '../pages/InventarioPage'
 import IABetaPage from '../pages/IABetaPage'
 import LandingTemplate from '../components/templates/LandingTemplate'
 
+const API_DOCS_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8001/api'}/docs/`
+
 // Landing content (movido desde App.jsx)
 const sections = [
   {
-    tag: 'Empresas',
-    title: 'Gestión centralizada de empresas',
+    tag: 'Demo',
+    title: 'Recorrido listo para evaluar',
     description:
-      'Crea, edita y elimina compañías con metadatos clave (NIT, dirección, teléfono). Diseño pensado para administradores.',
+      'Ingresa con los usuarios demo, explora empresas reales de prueba y revisa inventario con estados críticos, bajos y saludables.',
     actions: [
-      'Validación en vivo del NIT',
-      'Asignación de responsables',
-      'Visor público para usuarios externos',
+      'Admin: admin.demo@example.com',
+      'Lectura: demo@example.com',
+      'Password documentado en README',
     ],
   },
   {
-    tag: 'Productos',
-    title: 'Catálogo multi-moneda',
+    tag: 'Operación',
+    title: 'Empresas, productos e inventario',
     description:
-      'Define códigos únicos, características y precios dinamizados por divisa para cada empresa.',
+      'CRUD administrativo con permisos por rol, búsqueda por NIT/nombre y catálogo multi-moneda conectado al stock.',
     actions: [
-      'Switch rápido COP / USD / EUR',
-      'Relación directa con inventario',
-      'Filtros por empresa, código y tags IA',
+      'Permisos admin / lectura',
+      'Productos por empresa',
+      'Inventario por producto',
     ],
   },
   {
-    tag: 'Inventario',
-    title: 'Panel operativo y PDF',
+    tag: 'Reportes',
+    title: 'PDF, correo e historial',
     description:
-      'Consulta niveles de stock, exporta reportes y programa envíos seguros vía servicios REST confiables.',
+      'Genera reportes PDF, registra envíos y mantiene la demo funcional incluso sin llaves externas de Resend.',
     actions: [
-      'Generación de PDF con branding',
-      'Webhook para correo y API REST',
-      'Integración blockchain para sellado',
+      'PDF con ReportLab',
+      'Modo demo para correo',
+      'Historial auditable',
     ],
   },
   {
-    tag: 'IA + Blockchain',
-    title: 'Funcionalidad emergente',
+    tag: 'Analítica',
+    title: 'IA por reglas y certificación',
     description:
-      'Módulo para auditar trazabilidad y sugerir reposiciones inteligentes usando embeddings + NFTs ligeros.',
+      'Clasifica niveles de stock, propone acciones y certifica el contenido del reporte con hashes SHA-256.',
     actions: [
-      'Alertas inteligentes por empresa',
-      'Dashboard de riesgo / fraude',
-      'Registro inmutable por transacción',
+      'Alertas críticas',
+      'Resumen ejecutivo',
+      'Hash de documento y contenido',
     ],
   },
 ]
@@ -58,72 +60,72 @@ const sections = [
 const workflowSteps = [
   {
     badge: 'Auth',
-    title: 'Secure login',
-    copy: 'JWT (SimpleJWT) ready endpoints para validar credenciales cifradas.',
+    title: 'Login JWT',
+    copy: 'Autenticación con SimpleJWT, refresh token y roles para lectura o administración.',
   },
   {
     badge: 'Empresas',
-    title: 'Company registry',
-    copy: 'CRUD con roles (admin vs externo) y búsquedas por NIT o nombre.',
+    title: 'Datos demo',
+    copy: 'Empresas, productos e inventario sembrados con casos diseñados para mostrar decisiones técnicas.',
   },
   {
     badge: 'Inventario',
-    title: 'PDF + Blockchain',
-    copy: 'Descarga y firma digital del inventario con envío automatizado vía API REST.',
+    title: 'PDF + hash',
+    copy: 'Descarga de reportes y generación de hashes para verificar integridad del documento.',
   },
   {
-    badge: 'IA',
-    title: 'Predictive insights',
-    copy: 'Sugerencias de stock y precios en múltiples monedas usando librerías de IA.',
+    badge: 'API',
+    title: 'OpenAPI',
+    copy: 'Documentación interactiva disponible para revisar contratos REST y probar endpoints.',
   },
 ]
 
 const getHeroContent = (isAuthenticated, user) => {
   if (isAuthenticated && user) {
-    const displayName = user.first_name || user.username || 'Usuario'
+    const displayName = user.full_name || user.email || 'Usuario'
     return {
-      eyebrow: '✨ Bienvenido de nuevo',
-      title: `Hola ${displayName}, listo para gestionar tu inventario?`,
+      eyebrow: 'Sesión activa',
+      title: `Hola ${displayName}, el demo está listo para recorrer.`,
       description:
-        '🎯 Tienes acceso completo a todas las funcionalidades. Gestiona empresas, productos, inventario y activa las funciones de IA para optimizar tu operación.',
+        'Gestiona empresas, productos e inventario; luego genera un PDF, revisa el análisis inteligente y valida los hashes del reporte.',
       buttons: [
-        { label: '🏢 Ver Empresas', variant: 'primary', as: 'a', href: '/empresas' },
-        { label: '📦 Inventario', variant: 'secondary', as: 'a', href: '/inventario' },
-        { label: '🤖 Activar IA Beta', variant: 'ghost', as: 'a', href: '/ia-beta' },
+        { label: 'Ver empresas', variant: 'primary', as: 'a', href: '/empresas' },
+        { label: 'Abrir inventario', variant: 'secondary', as: 'a', href: '/inventario' },
+        { label: 'Ver API docs', variant: 'ghost', as: 'a', href: API_DOCS_URL },
       ],
       roadmap: {
-        eyebrow: '🎯 Acciones Rápidas',
-        title: 'Continúa donde lo dejaste',
+        eyebrow: 'Siguiente paso',
+        title: 'Recorrido de evaluación',
         description:
-          'Accede a todas las funcionalidades de la plataforma. Tu sesión está activa y segura con autenticación JWT.',
+          'Este recorrido está pensado para que alguien vea rápido frontend, backend, permisos, documentos y trazabilidad.',
         bullets: [
-          { text: '✅ Sesión activa y segura', variant: 'primary' },
-          { text: '🚀 Todas las funciones desbloqueadas', variant: 'secondary' },
-          { text: '⚡ IA y Blockchain disponibles', variant: 'accent' },
+          { text: 'JWT activo y rol detectado', variant: 'primary' },
+          { text: 'Datos demo listos para explorar', variant: 'secondary' },
+          { text: 'PDF, análisis y hash disponibles', variant: 'accent' },
         ],
       },
     }
   }
 
   return {
-    eyebrow: 'Frontend · Atomic Design',
-    title: 'Panel operativo para empresas, productos e inventario con Tailwind + React 18.',
+    eyebrow: 'Proyecto demo fullstack',
+    title: 'Inventario Pro muestra mi trabajo con React, Django REST y automatización de reportes.',
     description:
-      'Esta maqueta define la capa visible que consumirá la API Django. Cada bloque corresponde a un template Atomic listo para hooks, contextos y servicios REST.',
+      'Una app de portafolio con flujo real: login JWT, empresas, productos, inventario, PDF, correo simulado en demo, análisis de stock y certificación por hash.',
     buttons: [
-      { label: 'Iniciar Sesión', variant: 'primary', as: 'a', href: '/login' },
-      { label: 'Ver Empresas', variant: 'secondary', as: 'a', href: '/empresas' },
-      { label: 'Activar IA Beta', variant: 'ghost', as: 'a', href: '/ia-beta' },
+      { label: 'Probar demo', variant: 'primary', as: 'a', href: '/login' },
+      { label: 'Ver empresas', variant: 'secondary', as: 'a', href: '/empresas' },
+      { label: 'API docs', variant: 'ghost', as: 'a', href: API_DOCS_URL },
     ],
     roadmap: {
-      eyebrow: 'Roadmap',
-      title: 'IA · Blockchain · PDF seguro',
+      eyebrow: 'Credenciales demo',
+      title: 'Admin y lectura disponibles',
       description:
-        'El frontend consumirá endpoints JWT (/api/auth/login/) y servicios especializados para PDF/Correo. Reservamos hooks en src/hooks y contextos globales para el manejo de sesión.',
+        'Usa admin.demo@example.com para CRUD o demo@example.com para navegación de lectura. Las contraseñas están en el README.',
       bullets: [
-        { text: 'Estados de carga y skeletons listos para datos reales.', variant: 'primary' },
-        { text: 'Atomic templates para Empresa, Productos, Inventario.', variant: 'secondary' },
-        { text: 'Integración de firmas blockchain y recomendaciones IA.', variant: 'accent' },
+        { text: 'Backend sembrado con seed_demo', variant: 'primary' },
+        { text: 'Modo demo sin llaves externas', variant: 'secondary' },
+        { text: 'Swagger disponible en la API', variant: 'accent' },
       ],
     },
   }
@@ -131,9 +133,9 @@ const getHeroContent = (isAuthenticated, user) => {
 
 const workflowContent = {
   eyebrow: 'User journey',
-  title: 'De sesión a PDF firmado',
-  ctaLabel: 'Ver documentación →',
-  ctaHref: '/docs',
+  title: 'De sesión a reporte certificado',
+  ctaLabel: 'Ver API docs →',
+  ctaHref: API_DOCS_URL,
   steps: workflowSteps,
 }
 

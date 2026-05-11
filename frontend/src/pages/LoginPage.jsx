@@ -22,12 +22,10 @@ const LoginPage = () => {
   }, [isAuthenticated, navigate])
 
   const handleLogin = useCallback(
-    async ({ email, password, rememberMe }) => {
+    async ({ email, password }) => {
       const result = await login(email, password)
       
       if (result.success) {
-        // Si rememberMe está activo, el token ya está en localStorage
-        // Si no, podríamos usar sessionStorage (simplificado aquí)
         navigate('/empresas', { replace: true })
       }
     },
