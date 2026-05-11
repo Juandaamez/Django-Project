@@ -17,9 +17,9 @@ const sections = [
     description:
       'Ingresa con los usuarios demo, explora empresas reales de prueba y revisa inventario con estados críticos, bajos y saludables.',
     actions: [
-      'Admin: admin.demo@example.com',
-      'Lectura: demo@example.com',
-      'Password documentado en README',
+      'Admin: admin.demo@example.com / DemoAdmin2026!',
+      'Lectura: demo@example.com / DemoUser2026!',
+      'El login también trae botones para rellenar estos datos',
     ],
   },
   {
@@ -121,7 +121,7 @@ const getHeroContent = (isAuthenticated, user) => {
       eyebrow: 'Credenciales demo',
       title: 'Admin y lectura disponibles',
       description:
-        'Usa admin.demo@example.com para CRUD o demo@example.com para navegación de lectura. Las contraseñas están en el README.',
+        'Admin: admin.demo@example.com / DemoAdmin2026!. Lectura: demo@example.com / DemoUser2026!.',
       bullets: [
         { text: 'Backend sembrado con seed_demo', variant: 'primary' },
         { text: 'Modo demo sin llaves externas', variant: 'secondary' },

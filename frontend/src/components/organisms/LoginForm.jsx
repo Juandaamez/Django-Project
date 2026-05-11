@@ -18,6 +18,21 @@ const MailIcon = ({ className }) => (
   </svg>
 )
 
+const demoAccounts = [
+  {
+    label: 'Admin demo',
+    email: 'admin.demo@example.com',
+    password: 'DemoAdmin2026!',
+    description: 'CRUD completo',
+  },
+  {
+    label: 'Lectura demo',
+    email: 'demo@example.com',
+    password: 'DemoUser2026!',
+    description: 'Vista de consulta',
+  },
+]
+
 const LoginForm = ({ onSubmit, isLoading = false, error, onClearError }) => {
   const [formData, setFormData] = useState({
     email: '',
@@ -31,6 +46,22 @@ const LoginForm = ({ onSubmit, isLoading = false, error, onClearError }) => {
   })
 
   const [errors, setErrors] = useState({})
+
+  const handleDemoAccount = useCallback(
+    (account) => {
+      setFormData({
+        email: account.email,
+        password: account.password,
+        rememberMe: true,
+      })
+      setTouched({ email: false, password: false })
+      setErrors({})
+      if (error && onClearError) {
+        onClearError()
+      }
+    },
+    [error, onClearError]
+  )
 
   // Validación de campos
   const validateField = useCallback((name, value) => {
@@ -119,6 +150,30 @@ const LoginForm = ({ onSubmit, isLoading = false, error, onClearError }) => {
           onDismiss={onClearError}
         />
       )}
+
+      <div className="rounded-xl border border-brand-primary/20 bg-brand-primary/10 p-4">
+        <p className="text-sm font-semibold text-white">Acceso rápido al demo</p>
+        <p className="mt-1 text-xs text-white/60">
+          Elige un perfil y el formulario se rellena automáticamente.
+        </p>
+        <div className="mt-3 grid gap-2">
+          {demoAccounts.map((account) => (
+            <button
+              key={account.email}
+              type="button"
+              onClick={() => handleDemoAccount(account)}
+              className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-left transition-colors hover:border-brand-primary/50 hover:bg-white/10"
+            >
+              <span className="block text-sm font-semibold text-white">
+                {account.label} · {account.description}
+              </span>
+              <span className="mt-1 block break-all font-mono text-xs text-white/70">
+                {account.email} / {account.password}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Campo de Email */}
       <FormField
